@@ -20,7 +20,6 @@ input_train = pd.read_table("../train.tsv")
 input_train_txt = input_train.as_matrix()
 target_train = input_train['price']
 input_test = pd.read_table("../test.tsv")
-
 print("Data is loaded")
 
 def error_function(labels, predicted):
@@ -41,4 +40,3 @@ def label_encoder(column):
 reg = linear_model.LinearRegression()
 reg.fit(np.array([input_train_txt[:,2],input_train_txt[:,6]]).T, target_train)
 first_prediction = reg.predict()
-
