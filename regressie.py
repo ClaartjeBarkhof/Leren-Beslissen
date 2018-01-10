@@ -27,8 +27,12 @@ def error_function(labels, predicted):
 
 # Returns encoded discrete values of a single column
 def label_encoder(column):
-	le = labelEncoder()
+	le = LabelEncoder()
 	le.fit(column)
 	encoded_column = le.transform(column)
 	del le
 	return encoded_column
+
+# Testing the label encoder
+print (input_train['category_name'].iloc[0:3])
+print label_encoder(input_train['category_name'].iloc[0:3])
