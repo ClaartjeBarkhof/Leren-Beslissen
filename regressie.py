@@ -24,3 +24,9 @@ def error_function(labels, predicted):
     # Y and Y_red have already been in log scale.
     assert Y.shape == Y_pred.shape
     return np.sqrt(np.mean(np.square(predicted - labels)))
+
+# Returns encoded discrete values of a single column
+def label_encoder(column):
+	le = labelEncoder()
+	le.fit(column)
+	return le.transform(column)
