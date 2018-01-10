@@ -15,3 +15,10 @@ from keras.layers import Input, Dropout, Dense, concatenate, GRU, Embedding, Fla
 from keras.optimizers import Adam
 from keras.models import Model
 from keras import backend as K
+
+
+
+def error_function(labels, predicted):
+    # Y and Y_red have already been in log scale.
+    assert Y.shape == Y_pred.shape
+    return np.sqrt(np.mean(np.square(Y_pred - Y )))
