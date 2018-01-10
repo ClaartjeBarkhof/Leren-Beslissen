@@ -23,4 +23,4 @@ print(target_train.shape)
 def error_function(labels, predicted):
     # Y and Y_red have already been in log scale.
     assert Y.shape == Y_pred.shape
-    return np.sqrt(np.mean(np.square(Y_pred - Y )))
+    return np.sqrt(np.mean(np.square(predicted - labels)))
