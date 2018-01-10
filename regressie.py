@@ -45,7 +45,7 @@ def label_encoder(column):
 
 # Testing the label encoder
 print (input_train['category_name'].iloc[0:3])
-print label_encoder(input_train['category_name'].iloc[0:3])
+print (label_encoder(input_train['category_name'].iloc[0:3]))
 
 # Basic regression (taken from http://scikit-learn.org/stable/modules/linear_model.html)
 reg = linear_model.LinearRegression()
