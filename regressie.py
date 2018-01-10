@@ -29,4 +29,6 @@ def error_function(labels, predicted):
 def label_encoder(column):
 	le = labelEncoder()
 	le.fit(column)
-	return le.transform(column)
+	encoded_column = le.transform(column)
+	del le
+	return encoded_column
