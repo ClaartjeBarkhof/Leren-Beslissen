@@ -17,17 +17,27 @@ from keras import backend as K
 
 def error_function(labels, predicted):
     # Y and Y_red have already been in log scale.
-    assert Y.shape == Y_pred.shape
-    return np.sqrt(np.mean(np.square(Y_pred - Y )))
+    assert labels.shape == predicted.shape
+    return np.sqrt(np.mean(np.square(predicted - labels)))
 
 # Load the data
 input_train = pd.read_table("../train.tsv")
 input_train_txt = input_train.as_matrix()
 target_train = input_train['price']
 print("Data is loaded")
-print(input_train[0:1])
+
+# Returns encoded discrete values of a single column
+def label_encoder(column):
+	le = LabelEncoder()
+	le.fit(column)
+	encoded_column = le.transform(column)
+	del le
+	return encoded_column
+
+# Testing the label encoder
+print (input_train['category_name'].iloc[0:3])
+print label_encoder(input_train['category_name'].iloc[0:3])
 
 # Basic regression (taken from http://scikit-learn.org/stable/modules/linear_model.html)
 reg = linear_model.LinearRegression()
 reg.fit(input_train, target_train)
-
