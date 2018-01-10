@@ -15,7 +15,6 @@ from keras.optimizers import Adam
 from keras.models import Model
 from keras import backend as K
 
-
 # Packages van "Tensorflow starter conv1d"
 # import re
 # from collections import Counter
@@ -24,16 +23,17 @@ from keras import backend as K
 # from fastcache import clru_cache as lru_cache
 # from time import time
 
-def error_function(labels, predicted):
-    # Y and Y_red have already been in log scale.
-    assert labels.shape == predicted.shape
-    return np.sqrt(np.mean(np.square(predicted - labels)))
-
 # Load the data
 input_train = pd.read_table("../train.tsv")
 input_train_txt = input_train.as_matrix()
 target_train = input_train['price']
+input_test = pd.read_table("../test.tsv")
 print("Data is loaded")
+
+def error_function(labels, predicted):
+    # Y and Y_red have already been in log scale.
+    assert labels.shape == predicted.shape
+    return np.sqrt(np.mean(np.square(predicted - labels)))
 
 # Returns encoded discrete values of a single column
 def label_encoder(column):
@@ -49,4 +49,6 @@ print label_encoder(input_train['category_name'].iloc[0:3])
 
 # Basic regression (taken from http://scikit-learn.org/stable/modules/linear_model.html)
 reg = linear_model.LinearRegression()
-reg.fit(input_train, target_train)
+
+reg.fit(np.array([input_train_txt[:,2],input_train_txt[:,6]]).T, target_train)
+##first_prediction = reg.predict()
