@@ -20,7 +20,7 @@ def main():
 	data = open_tsv("../train.tsv")
 	data = replace_NAN(data)
 	data = split_catagories(data)
-	data.to_csv("cleaned.csv", sep='\t')
+	data.to_csv("../cleaned.csv", sep='\t')
 
 main()
 
