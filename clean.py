@@ -10,7 +10,7 @@ stop_words = set(stopwords.words('english'))
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
-	return data.iloc[0:10,:]
+	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
 	data['category_name'] = data['category_name'].fillna('undefined').astype(str)
@@ -39,13 +39,10 @@ def tokenize(description):
 def add_tokenize_cols(data):
 	data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
-	return data
+	return
 
 def main():
 	data = open_tsv("../train.tsv")
-	data = replace_NAN(data)
-	data = split_catagories(data)
-	data.to_csv("../cleaned.csv", sep='\t')
-
-main()
-
+	#data = replace_NAN(data)
+	#data = split_catagories(data)
+	#data.to_csv("../cleaned.csv", sep='\t')

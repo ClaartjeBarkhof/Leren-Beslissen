@@ -1,9 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import clean
-
-# Algorithm
+#import clean
 
 # Cost function
 # Expects a dataframe of two colums: 
@@ -29,7 +27,16 @@ def regression(training_set, training_target, validation_set, validation_target)
     prediction = reg.predict(validation_set)
     return pd.Dataframe({'p':prediction, 'a':validation_target})
 
+# Expects a dataframe of one column:
+# the predicted price
+def write_submission(price_df, csv_name):
+	id_df = pd.DataFrame(np.arange(price_df.shape[0]), columns=['test_id'])
+	submission_df = pd.concat([id_df, price_df], axis=1)
+	submission_df = submission_df.rename(columns = {'p':'price'})
+	submission_df.to_csv(csv_name, sep=',', index=False)
+
 def main():
+	print("hello world")
 	training_set, training_target, validation_set, validation_target = clean.open_tsv('../train.tsv')
 	prediction = regression(training_set, training_target, validation_set, validation_target)
 	return clac_error(prediction)
