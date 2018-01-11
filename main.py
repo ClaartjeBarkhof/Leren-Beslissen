@@ -16,12 +16,16 @@ def calc_error(dataframe):
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
 	return error
 
+#def write_submission(dataframe):
+
+
 def main():
 	# TEST DATAFRAME
 	#d = {'p': [1, 2], 'a': [3, 4]}
 	#df = pd.DataFrame(data=d)
 	data = clean.open_tsv('../train.tsv')
-	print(data.head())
+	print(len(set(data['category_name'])))
+	#print(data.head())
 	#print('RSMLE =',calc_error(df))
 
 main()
