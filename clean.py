@@ -40,9 +40,3 @@ def add_tokenize_cols(data):
 	data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
 	return
-
-def main():
-	data = open_tsv("../train.tsv")
-	#data = replace_NAN(data)
-	#data = split_catagories(data)
-	#data.to_csv("../cleaned.csv", sep='\t')
