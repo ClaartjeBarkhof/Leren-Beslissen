@@ -16,12 +16,22 @@ def calc_error(dataframe):
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
 	return error
 
-def main():
-	# TEST DATAFRAME
-	#d = {'p': [1, 2], 'a': [3, 4]}
-	#df = pd.DataFrame(data=d)
-	data = clean.open_tsv('../train.tsv')
-	print(data.head())
-	#print('RSMLE =',calc_error(df))
+def validation_split(data, ratio):
+    np.random.shuffle(data)
+    training_size = round(len(data) * ratio)
+    training_set = data[:training_size]
+    validation_set = data[training_size:]
+    return training_set, validation_set
 
+def regression(training_set, training_target, validation_set, validation_target):
+    reg = linear_model.LinearRegression()
+    reg.fit(training_set, training_target)
+    prediction = reg.predict(validation_set)
+    return pd.Dataframe({'p':prediction, 'a':validation_target})
+
+def main():
+	training_set, training_target, validation_set, validation_target = clean.open_tsv('../train.tsv')
+	prediction = regression(training_set, training_target, validation_set, validation_target)
+	return clac_error(prediction)
+	
 main()
