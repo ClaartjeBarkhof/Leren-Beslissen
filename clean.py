@@ -6,7 +6,6 @@ import nltk
 # nltk.download('stopwords')
 import time
 
-
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
@@ -15,7 +14,6 @@ from nltk.stem import PorterStemmer
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
-
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -70,6 +68,7 @@ def add_tokenize_cols(data):
 def binary_encoding(column, l_encoder, oh_encoder):
 	# l_encoder = LabelEncoder()
 	# oh_encoder = OneHotEncoder()
+ 	# ERROR als met meer dan 100 testen
  	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
  	column_int = column_int.reshape(-1, 1)
  	column_bin = oh_encoder.fit_transform(column_int).toarray()
@@ -94,7 +93,7 @@ def bin_cleaning_data(data):
 
 def clean_main():
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:100]
+	data = data.iloc[0:1000]
 	t_start = time.time()
 	data = replace_NAN(data)
 
