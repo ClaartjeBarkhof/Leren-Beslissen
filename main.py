@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-#import clean
+import clean
 
 # Cost function
 # Expects a dataframe of two colums: 
@@ -20,12 +20,6 @@ def validation_split(data, ratio):
     training_set = data[:training_size]
     validation_set = data[training_size:]
     return training_set, validation_set
-
-def regression(training_set, training_target, validation_set, validation_target):
-    reg = linear_model.LinearRegression()
-    reg.fit(training_set, training_target)
-    prediction = reg.predict(validation_set)
-    return pd.Dataframe({'p':prediction, 'a':validation_target})
 
 # Expects a dataframe of one column:
 # the predicted price
