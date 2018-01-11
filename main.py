@@ -16,16 +16,22 @@ def calc_error(dataframe):
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
 	return error
 
-#def write_submission(dataframe):
-
+# Expects a dataframe of one column:
+# the predicted price
+def write_submission(price_df, csv_name):
+	id_df = pd.DataFrame(np.arange(price_df.shape[0]), columns=['test_id'])
+	submission_df = pd.concat([id_df, price_df], axis=1)
+	submission_df = submission_df.rename(columns = {'p':'price'})
+	submission_df.to_csv(csv_name, sep=',', index=False)
 
 def main():
 	# TEST DATAFRAME
-	#d = {'p': [1, 2], 'a': [3, 4]}
-	#df = pd.DataFrame(data=d)
-	data = clean.open_tsv('../train.tsv')
-	print(len(set(data['category_name'])))
+	d = {'p': [1, 2, 3, 4]}
+	df = pd.DataFrame(data=d)
+	#data = clean.open_tsv('../train.tsv')
+	#print(len(set(data['category_name'])))
 	#print(data.head())
 	#print('RSMLE =',calc_error(df))
+	write_submission(df, '../submission.csv')
 
 main()
