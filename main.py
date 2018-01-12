@@ -1,7 +1,8 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import clean
+import learning_algorithms
 
 # Cost function
 # Expects a dataframe of two colums: 
@@ -19,7 +20,12 @@ def validation_split(data, ratio):
     training_size = round(len(data) * ratio)
     training_set = data[:training_size]
     validation_set = data[training_size:]
-    return training_set, validation_set
+    t_x = training_set[:, :-1]
+    t_y = training_set[:, -1]
+    v_x = validation_set[:, :-1]
+    v_y = validation_set[:, -1]
+
+    return t_x, t_y, v_x, v_y
 
 # Expects a dataframe of one column:
 # the predicted price
@@ -30,8 +36,9 @@ def write_submission(price_df, csv_name):
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
 def main():
-	training_set, training_target, validation_set, validation_target = clean.clean_main('../train.tsv')
-	prediction = regression(training_set, training_target, validation_set, validation_target)
-	return clac_error(prediction)
+	clean_data = clean.clean_main()
+	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
+	prediction = learning_algorithms.linear_regression(training_set, training_target, validation_set, validation_target)
+	return calc_error(prediction)
 	
-main()
+print(main())

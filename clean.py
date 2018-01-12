@@ -15,10 +15,14 @@ from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 
-
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
+
+# First five encoders for categories. Sixth for brands
+label_encoder_list = [LabelEncoder() for i in range(6)]
+oh_encoder_list = [OneHotEncoder() for i in range(6)]
+
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=10)
@@ -61,36 +65,50 @@ def add_tokenize_cols(data):
 # 	ub = len(np.unique(data['brand_name']))
 # 	columns = columns + uc + ub - 2
 
-def binary_encoding(column):
- 	column_int = LabelEncoder().fit_transform(column.ravel()).reshape(*column.shape)
+def binary_encoding(column, l_encoder, oh_encoder):
+	# l_encoder = LabelEncoder()
+	# oh_encoder = OneHotEncoder()
+ 	# ERROR als met meer dan 100 testen
+ 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
  	column_int = column_int.reshape(-1, 1)
- 	column_bin = OneHotEncoder().fit_transform(column_int).toarray()
+ 	column_bin = oh_encoder.fit_transform(column_int).toarray()
+
+
+
  	return(pd.DataFrame(column_bin))
 #	return np.array(column_bin)
 
 def bin_cleaning_data(data):
-#	matrix = np.array(data['train_id'])
-
+	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping']], axis=1)
+#	matrix = np.vstack(np.array(data['train_id']), 
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
-			data = pd.concat([data, binary_encoding(data['category_'+str(i)])], axis=1)
-			data = data.drop('category_'+str(i), 1)		
-	data = pd.concat([data, binary_encoding(data['brand_name'])], axis=1)
-	data = data.drop('brand_name', 1)
-	return(data)
+			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], label_encoder_list[i], oh_encoder_list[i])], axis=1)
+#			new_data = data.drop('category_'+str(i), 1)		
+	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], label_encoder_list[5], oh_encoder_list[5])], axis=1)
+	new_data = pd.concat([new_data, data['price']], axis=1)
+#	data = data.drop('brand_name', 1)
+	return(new_data.as_matrix())
 
 
 def clean_main():
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:100]
+	data = data.iloc[0:1000]
 	t_start = time.time()
 	data = replace_NAN(data)
+
+	print("----%s seconds ----" %(time.time()-t_start))
+	t_1 = time.time()
+
 	data = split_catagories(data)
+
+	print("----%s seconds ----" %(time.time()-t_1))
+	t_2 = time.time()
+
 	data = bin_cleaning_data(data)
-	print(data)
-	#data.to_csv('../cleaned_binary.csv', sep=',')
-	#print("----%s seconds ----" %(time.time()-t_start))
-#	print(data.head())
+	print("----%s seconds ----" %(time.time()-t_2))
+
+	return data
 
 clean_main()
-	#data.to_csv("../cleaned.csv", sep='\t')
+	
