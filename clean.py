@@ -23,7 +23,6 @@ stop_words = set(stopwords.words('english'))
 # First five encoders for categories. Sixth for brands
 oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
-
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
 	return data #.iloc[0:10,:]
