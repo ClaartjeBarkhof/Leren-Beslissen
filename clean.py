@@ -6,7 +6,6 @@ import nltk
 # nltk.download('stopwords')
 import time
 
-
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
@@ -22,7 +21,7 @@ tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath)
+	data = pd.read_table(filepath, nrows=10)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -88,8 +87,9 @@ def clean_main():
 	data = replace_NAN(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-	data.to_csv('../cleaned_binary.csv', sep=',')
-	print("----%s seconds ----" %(time.time()-t_start))
+	print(data)
+	#data.to_csv('../cleaned_binary.csv', sep=',')
+	#print("----%s seconds ----" %(time.time()-t_start))
 #	print(data.head())
 
 clean_main()

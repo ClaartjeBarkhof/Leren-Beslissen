@@ -30,8 +30,7 @@ def write_submission(price_df, csv_name):
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
 def main():
-	print("hello world")
-	training_set, training_target, validation_set, validation_target = clean.open_tsv('../train.tsv')
+	training_set, training_target, validation_set, validation_target = clean.clean_main('../train.tsv')
 	prediction = regression(training_set, training_target, validation_set, validation_target)
 	return clac_error(prediction)
 	
