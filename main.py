@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import clean
 import learning_algorithms
+import warnings
+
+warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 
 # Cost function
 # Expects a dataframe of two colums: 
@@ -11,7 +14,14 @@ import learning_algorithms
 def calc_error(dataframe):
 	pred_price = dataframe['p']
 	actual_price = dataframe['a']
+	print('\n',pred_price, '\n')
+	print('\n',actual_price, '\n')
 	n = len(pred_price)
+	verschil_vec = (pred_price - actual_price)
+	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
+	variance = (1 / n) * np.sum((verschil_vec - mean_verschil) ** 2)
+	print("Gemiddelde afwijking in prijs:", mean_verschil)
+	print("Variantie:", variance)
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
 	return error
 
@@ -39,6 +49,7 @@ def main():
 	clean_data = clean.clean_main()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
 	prediction = learning_algorithms.linear_regression(training_set, training_target, validation_set, validation_target)
-	return calc_error(prediction)
+	print("RSMLE =", calc_error(prediction))
+
 	
-print(main())
+main()
