@@ -25,7 +25,7 @@ oh_encoder_list = [OneHotEncoder() for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=10)
+	data = pd.read_table(filepath)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -66,12 +66,28 @@ def add_tokenize_cols(data):
 # 	columns = columns + uc + ub - 2
 
 def binary_encoding(column, l_encoder, oh_encoder):
-	# l_encoder = LabelEncoder()
-	# oh_encoder = OneHotEncoder()
  	# ERROR als met meer dan 100 testen
- 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
+ 	# print("column")
+ 	# print(column)
+ 	print(column)
+ 	l_encoder = l_encoder.fit(column)
+ 	column_int = l_encoder.transform(column)
+ 	print(column_int)
  	column_int = column_int.reshape(-1, 1)
- 	column_bin = oh_encoder.fit_transform(column_int).toarray()
+
+
+ 	# print("column_int")
+ 	# print(column_int)
+
+ 	oh_encoder = oh_encoder.fit(column_int)
+ 	column_bin = oh_encoder.transform(column_int).toarray()
+
+ 	# print("column_bin")
+ 	# print(column_bin)
+
+# 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
+# 	column_int = column_int.reshape(-1, 1)
+# 	column_bin = oh_encoder.fit_transform(column_int).toarray()
 
 
 
@@ -92,7 +108,9 @@ def bin_cleaning_data(data):
 
 
 def clean_main():
+#	print("hallo")
 	data = open_tsv("../train.tsv")
+	print(data.shape)
 	data = data.iloc[0:1000]
 	t_start = time.time()
 	data = replace_NAN(data)
@@ -108,10 +126,11 @@ def clean_main():
 	data = bin_cleaning_data(data)
 	print("----%s seconds ----" %(time.time()-t_2))
 
+	print(data.shape)
 	return data
-	print(data[0:10])
+#	print(data[0:10])
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
 
-clean_main()
+#clean_main()
 	
