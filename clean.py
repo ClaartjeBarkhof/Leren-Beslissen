@@ -93,22 +93,22 @@ def bin_cleaning_data(data):
 
 def clean_main():
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:1000]
+	data = data.iloc[0:100]
 	t_start = time.time()
 	data = replace_NAN(data)
 
-	print("----%s seconds ----" %(time.time()-t_start))
+	#print("----%s seconds ----" %(time.time()-t_start))
 	t_1 = time.time()
 
 	data = split_catagories(data)
 
-	print("----%s seconds ----" %(time.time()-t_1))
+	#print("----%s seconds ----" %(time.time()-t_1))
 	t_2 = time.time()
 
 
 	data = bin_cleaning_data(data)
 
-	print("----%s seconds ----" %(time.time()-t_2))
+	#print("----%s seconds ----" %(time.time()-t_2))
 
 	return data
 #	print(data[0:10])
