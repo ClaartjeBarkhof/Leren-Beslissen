@@ -112,7 +112,7 @@ def clean_main():
 	print("----%s seconds ----" %(time.time()-t_2))
 
 	return data
-#	print(data[0:10])
+	print(data[0:10])
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
 
