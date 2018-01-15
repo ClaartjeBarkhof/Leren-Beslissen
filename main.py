@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import clean
 import learning_algorithms
+import category_encoders as ce
 
 # Cost function
 # Expects a dataframe of two colums: 
@@ -38,7 +39,7 @@ def write_submission(price_df, csv_name):
 def main():
 	clean_data = clean.clean_main()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	prediction = learning_algorithms.linear_regression(training_set, training_target, validation_set, validation_target)
+	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
 	return calc_error(prediction)
-	
+
 print(main())
