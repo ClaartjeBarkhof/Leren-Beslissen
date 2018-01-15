@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import nltk
-import pickle
+import pickle as pickle
 
 import numpy as np
 # nltk.download('tokenizer')
@@ -32,7 +32,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=100)
+	data = pd.read_table(filepath, nrows=1000)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -65,38 +65,6 @@ def add_tokenize_cols(data):
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
 	return
 
-<<<<<<< HEAD
-
-# def compute_cleaned_size(data):
-# 	rows, columns = (data.shape[0], data.shape[1])
-# 	uc = len(np.unique(data['category_name']))
-# 	ub = len(np.unique(data['brand_name']))
-# 	columns = columns + uc + ub - 2
-
-def binary_encoding(column, l_encoder, oh_encoder):
- 	# ERROR als met meer dan 100 testen
- 	# print("column")
- 	# print(column)
- 	# print(column)
- 	# l_encoder = l_encoder.fit(column)
- 	# column_int = l_encoder.transform(column)
- 	# print(column_int)
- 	# column_int = column_int.reshape(-1, 1)
- 	lb = LabelBinarizer(sparse_output=True)
- 	column_bin = lb.fit_transform(column).toarray()
-
- 	# oh_encoder = oh_encoder.fit(column_int)
- 	# column_bin = oh_encoder.transform(column_int).toarray()
-
-# 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
-# 	column_int = column_int.reshape(-1, 1)
-# 	column_bin = oh_encoder.fit_transform(column_int).toarray()
-
-
-
- 	return(pd.DataFrame(column_bin))
-#	return np.array(column_bin)
-
 def binary_encoding(column, oh_encoder):
 	oh_encoder = oh_encoder.fit(np.array(column))
 	column_bin = oh_encoder.transform(np.array(column))
@@ -112,20 +80,14 @@ def bin_cleaning_data(data):
 	return new_data.as_matrix()
 
 def scale(data):
-	print('data shipping')
-	print(data[:,2])
 	# standard_scaler.fit(data[:,1])
 	# data[:,1] = standard_scaler.transform(data[:,1])
 
 	standard_scaler.fit(np.transpose(data[:,2]))
 	data[:,2] = standard_scaler.transform(np.transpose(data[:,2]))
 
-	print(data[:,2])
 	return(data)
 	
-
-#	X_train_minmax = min_max_scaler.fit_transform(X_train)
-
 def clean_main():
 	data = open_tsv("../train.tsv")
 	#data = data.iloc[0:100]
@@ -146,26 +108,13 @@ def clean_main():
 	#print("----%s seconds ----" %(time.time()-t_2))
 	print("----%s seconds ----" %(time.time()-t_2))
 
-	print(data.shape)
-
 	# Save cleaned data matrix in file
-	# fileName = '../clean_matrix.pickle'
-	# fileObject = open(fileName,'wb')
-	# pickle.dump(data, fileObject)
-	# fileObject.close()
-	# return data
-
-	# to read pickle
-	# import pickle
-	# fileObject = open(fileName,'rb')
-	# matrix = pickle.load(fileObject)
-
-#	data = scale(data)
-
+	fileName = '../clean_matrix.pickle'
+	fileObject = open(fileName,'wb')
+	pickle.dump(data, fileObject)
+	fileObject.close()
+	data = scale(data)
 	return data
-#	print(data[0:10])
-#	data.to_csv('../cleaned_binary.csv', sep=',')
-
 
 clean_main()
 	
