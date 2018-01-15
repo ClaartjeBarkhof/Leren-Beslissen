@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
 import nltk
-<<<<<<< HEAD
 import pickle
-=======
+
 import numpy as np
->>>>>>> 16f95c835d12841c2856177bc9363b362d9bb900
 # nltk.download('tokenizer')
 # nltk.download('corpus')
 # nltk.download('stem')
