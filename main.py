@@ -48,6 +48,9 @@ def write_submission(price_df, csv_name):
 
 def main():
 	clean_data = clean.clean_main()
+#	print()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
+
+	print(prediction)
 	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
 	return calc_error(prediction)

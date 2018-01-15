@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 import nltk
+<<<<<<< HEAD
 import pickle
+=======
+import numpy as np
+>>>>>>> 16f95c835d12841c2856177bc9363b362d9bb900
 # nltk.download('tokenizer')
 # nltk.download('corpus')
 # nltk.download('stem')
@@ -17,13 +21,17 @@ from nltk.stem import PorterStemmer
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelBinarizer
+
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
 
 # First five encoders for categories. Sixth for brands
+standard_scaler = preprocessing.StandardScaler()
 oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
+
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=100)
@@ -59,6 +67,38 @@ def add_tokenize_cols(data):
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
 	return
 
+<<<<<<< HEAD
+
+# def compute_cleaned_size(data):
+# 	rows, columns = (data.shape[0], data.shape[1])
+# 	uc = len(np.unique(data['category_name']))
+# 	ub = len(np.unique(data['brand_name']))
+# 	columns = columns + uc + ub - 2
+
+def binary_encoding(column, l_encoder, oh_encoder):
+ 	# ERROR als met meer dan 100 testen
+ 	# print("column")
+ 	# print(column)
+ 	# print(column)
+ 	# l_encoder = l_encoder.fit(column)
+ 	# column_int = l_encoder.transform(column)
+ 	# print(column_int)
+ 	# column_int = column_int.reshape(-1, 1)
+ 	lb = LabelBinarizer(sparse_output=True)
+ 	column_bin = lb.fit_transform(column).toarray()
+
+ 	# oh_encoder = oh_encoder.fit(column_int)
+ 	# column_bin = oh_encoder.transform(column_int).toarray()
+
+# 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
+# 	column_int = column_int.reshape(-1, 1)
+# 	column_bin = oh_encoder.fit_transform(column_int).toarray()
+
+
+
+ 	return(pd.DataFrame(column_bin))
+#	return np.array(column_bin)
+
 def binary_encoding(column, oh_encoder):
 	oh_encoder = oh_encoder.fit(np.array(column))
 	column_bin = oh_encoder.transform(np.array(column))
@@ -72,6 +112,21 @@ def bin_cleaning_data(data):
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5])], axis=1)
 	new_data = pd.concat([new_data, data['price']], axis=1)
 	return new_data.as_matrix()
+
+def scale(data):
+	print('data shipping')
+	print(data[:,2])
+	# standard_scaler.fit(data[:,1])
+	# data[:,1] = standard_scaler.transform(data[:,1])
+
+	standard_scaler.fit(np.transpose(data[:,2]))
+	data[:,2] = standard_scaler.transform(np.transpose(data[:,2]))
+
+	print(data[:,2])
+	return(data)
+	
+
+#	X_train_minmax = min_max_scaler.fit_transform(X_train)
 
 def clean_main():
 	data = open_tsv("../train.tsv")
@@ -107,6 +162,9 @@ def clean_main():
 	# fileObject = open(fileName,'rb')
 	# matrix = pickle.load(fileObject)
 
+#	data = scale(data)
+
+	return data
 #	print(data[0:10])
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
