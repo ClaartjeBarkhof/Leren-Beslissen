@@ -4,12 +4,12 @@ import numpy as np
 import clean
 import learning_algorithms
 import warnings
-
+from sklearn.model_selection import train_test_split
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 import category_encoders as ce
 
 # Cost function
-# Expects a dataframe of two colums: 
+# Expects a dataframe of two colums:
 # 		- col 1 to be the predicted price
 #		- col 2 to be the actual price
 def calc_error(dataframe):
@@ -27,16 +27,8 @@ def calc_error(dataframe):
 	return error
 
 def validation_split(data, ratio):
-    np.random.shuffle(data)
-    training_size = round(len(data) * ratio)
-    training_set = data[:training_size]
-    validation_set = data[training_size:]
-    t_x = training_set[:, :-1]
-    t_y = training_set[:, -1]
-    v_x = validation_set[:, :-1]
-    v_y = validation_set[:, -1]
-
-    return t_x, t_y, v_x, v_y
+	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=42)
+	return t_x, t_y, v_x, v_y
 
 # Expects a dataframe of one column:
 # the predicted price
