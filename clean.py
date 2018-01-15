@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import nltk
+import pickle
 # nltk.download('tokenizer')
 # nltk.download('corpus')
 # nltk.download('stem')
@@ -25,7 +26,7 @@ stop_words = set(stopwords.words('english'))
 oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath)
+	data = pd.read_table(filepath, nrows=100)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -74,9 +75,9 @@ def bin_cleaning_data(data):
 
 def clean_main():
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:100]
-	print(data.shape)
-	data = data.iloc[0:100000]
+	#data = data.iloc[0:100]
+	#print(data.shape)
+	#data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
 
@@ -93,10 +94,22 @@ def clean_main():
 	print("----%s seconds ----" %(time.time()-t_2))
 
 	print(data.shape)
-	return data
+
+	# Save cleaned data matrix in file
+	# fileName = '../clean_matrix.pickle'
+	# fileObject = open(fileName,'wb')
+	# pickle.dump(data, fileObject)
+	# fileObject.close()
+	# return data
+
+	# to read pickle
+	# import pickle
+	# fileObject = open(fileName,'rb')
+	# matrix = pickle.load(fileObject)
+
 #	print(data[0:10])
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
 
-#clean_main()
+clean_main()
 	
