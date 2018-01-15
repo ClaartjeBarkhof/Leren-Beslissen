@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import nltk
 import numpy as np
 # nltk.download('tokenizer')
@@ -6,6 +7,7 @@ import numpy as np
 # nltk.download('stem')
 # nltk.download('stopwords')
 import time
+import category_encoders as ce
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -23,10 +25,9 @@ tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
 
 # First five encoders for categories. Sixth for brands
-label_encoder_list = [LabelEncoder() for i in range(6)]
-oh_encoder_list = [OneHotEncoder() for i in range(6)]
-
 standard_scaler = preprocessing.StandardScaler()
+oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
+
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
@@ -62,6 +63,7 @@ def add_tokenize_cols(data):
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
 	return
 
+<<<<<<< HEAD
 
 # def compute_cleaned_size(data):
 # 	rows, columns = (data.shape[0], data.shape[1])
@@ -93,18 +95,19 @@ def binary_encoding(column, l_encoder, oh_encoder):
  	return(pd.DataFrame(column_bin))
 #	return np.array(column_bin)
 
+def binary_encoding(column, oh_encoder):
+	oh_encoder = oh_encoder.fit(np.array(column))
+	column_bin = oh_encoder.transform(np.array(column))
+	return column_bin
+
 def bin_cleaning_data(data):
 	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping']], axis=1)
-#	matrix = np.vstack(np.array(data['train_id']), 
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
-			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], label_encoder_list[i], oh_encoder_list[i])], axis=1)
-#			new_data = data.drop('category_'+str(i), 1)		
-	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], label_encoder_list[5], oh_encoder_list[5])], axis=1)
+			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i])], axis=1)
+	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5])], axis=1)
 	new_data = pd.concat([new_data, data['price']], axis=1)
-#	data = data.drop('brand_name', 1)
-	return(new_data.as_matrix())
-
+	return new_data.as_matrix()
 
 def scale(data):
 	print('data shipping')
@@ -122,10 +125,9 @@ def scale(data):
 #	X_train_minmax = min_max_scaler.fit_transform(X_train)
 
 def clean_main():
-#	print("hallo")
 	data = open_tsv("../train.tsv")
 	print(data.shape)
-	data = data.iloc[0:100]
+	data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
 
@@ -136,7 +138,6 @@ def clean_main():
 
 	print("----%s seconds ----" %(time.time()-t_1))
 	t_2 = time.time()
-
 	data = bin_cleaning_data(data)
 	print("----%s seconds ----" %(time.time()-t_2))
 
