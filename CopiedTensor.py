@@ -94,7 +94,7 @@ class Tokenizer:
 
 
 print('reading train data...')
-df_train = pd.read_csv('../input/train.tsv', sep='\t')
+df_train = pd.read_csv('../train.tsv', sep='\t')
 df_train = df_train[df_train.price != 0].reset_index(drop=True)
 
 price = df_train.pop('price')
@@ -303,7 +303,7 @@ for i in range(4):
 
 print('reading the test data...')
 
-df_test = pd.read_csv('../input/test.tsv', sep='\t')
+df_test = pd.read_csv('../test.tsv', sep='\t')
 
 df_test.name.fillna('unkname', inplace=True)
 df_test.category_name.fillna('unk_cat', inplace=True)
