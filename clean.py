@@ -1,5 +1,6 @@
 import pandas as pd
 import nltk
+import numpy as np
 # nltk.download('tokenizer')
 # nltk.download('corpus')
 # nltk.download('stem')
@@ -14,6 +15,8 @@ from nltk.stem import PorterStemmer
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelBinarizer
+
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -23,6 +26,7 @@ stop_words = set(stopwords.words('english'))
 label_encoder_list = [LabelEncoder() for i in range(6)]
 oh_encoder_list = [OneHotEncoder() for i in range(6)]
 
+standard_scaler = preprocessing.StandardScaler()
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
@@ -69,21 +73,16 @@ def binary_encoding(column, l_encoder, oh_encoder):
  	# ERROR als met meer dan 100 testen
  	# print("column")
  	# print(column)
- 	print(column)
- 	l_encoder = l_encoder.fit(column)
- 	column_int = l_encoder.transform(column)
- 	print(column_int)
- 	column_int = column_int.reshape(-1, 1)
-
-
- 	# print("column_int")
+ 	# print(column)
+ 	# l_encoder = l_encoder.fit(column)
+ 	# column_int = l_encoder.transform(column)
  	# print(column_int)
+ 	# column_int = column_int.reshape(-1, 1)
+ 	lb = LabelBinarizer(sparse_output=True)
+ 	column_bin = lb.fit_transform(column).toarray()
 
- 	oh_encoder = oh_encoder.fit(column_int)
- 	column_bin = oh_encoder.transform(column_int).toarray()
-
- 	# print("column_bin")
- 	# print(column_bin)
+ 	# oh_encoder = oh_encoder.fit(column_int)
+ 	# column_bin = oh_encoder.transform(column_int).toarray()
 
 # 	column_int = l_encoder.fit_transform(column.ravel()).reshape(*column.shape)
 # 	column_int = column_int.reshape(-1, 1)
@@ -107,11 +106,26 @@ def bin_cleaning_data(data):
 	return(new_data.as_matrix())
 
 
+def scale(data):
+	print('data shipping')
+	print(data[:,2])
+	# standard_scaler.fit(data[:,1])
+	# data[:,1] = standard_scaler.transform(data[:,1])
+
+	standard_scaler.fit(np.transpose(data[:,2]))
+	data[:,2] = standard_scaler.transform(np.transpose(data[:,2]))
+
+	print(data[:,2])
+	return(data)
+	
+
+#	X_train_minmax = min_max_scaler.fit_transform(X_train)
+
 def clean_main():
 #	print("hallo")
 	data = open_tsv("../train.tsv")
 	print(data.shape)
-	data = data.iloc[0:1000]
+	data = data.iloc[0:100]
 	t_start = time.time()
 	data = replace_NAN(data)
 
@@ -126,11 +140,12 @@ def clean_main():
 	data = bin_cleaning_data(data)
 	print("----%s seconds ----" %(time.time()-t_2))
 
-	print(data.shape)
+#	data = scale(data)
+
 	return data
 #	print(data[0:10])
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
 
-#clean_main()
+clean_main()
 	
