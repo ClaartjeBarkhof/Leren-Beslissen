@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import nltk
 # nltk.download('tokenizer')
 # nltk.download('corpus')
@@ -58,9 +59,9 @@ def add_tokenize_cols(data):
 	return
 
 def binary_encoding(column, oh_encoder):
- 	oh_encoder = oh_encoder.fit(column)
- 	column_bin = oh_encoder.transform(column)
- 	return column_bin
+	oh_encoder = oh_encoder.fit(np.array(column))
+	column_bin = oh_encoder.transform(np.array(column))
+	return column_bin
 
 def bin_cleaning_data(data):
 	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping']], axis=1)
@@ -72,11 +73,10 @@ def bin_cleaning_data(data):
 	return new_data.as_matrix()
 
 def clean_main():
-#	print("hallo")
 	data = open_tsv("../train.tsv")
 	data = data.iloc[0:100]
 	print(data.shape)
-	data = data.iloc[0:1000]
+	data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
 
@@ -87,7 +87,6 @@ def clean_main():
 
 	#print("----%s seconds ----" %(time.time()-t_1))
 	t_2 = time.time()
-
 	data = bin_cleaning_data(data)
 
 	#print("----%s seconds ----" %(time.time()-t_2))
