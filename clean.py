@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import nltk
 import pickle
+from pandas.core import datetools
 
 import numpy as np
 # nltk.download('tokenizer')
@@ -32,7 +33,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=100)
+	data = pd.read_table(filepath, nrows=50000)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -65,7 +66,6 @@ def add_tokenize_cols(data):
 	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
 	return
 
-<<<<<<< HEAD
 
 # def compute_cleaned_size(data):
 # 	rows, columns = (data.shape[0], data.shape[1])
@@ -167,5 +167,5 @@ def clean_main():
 #	data.to_csv('../cleaned_binary.csv', sep=',')
 
 
-clean_main()
+#clean_main()
 	

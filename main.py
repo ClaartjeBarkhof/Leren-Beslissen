@@ -7,6 +7,11 @@ import warnings
 from sklearn.model_selection import train_test_split
 warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
 import category_encoders as ce
+from patsy import dmatrices
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 # Cost function
 # Expects a dataframe of two colums:
@@ -15,20 +20,33 @@ import category_encoders as ce
 def calc_error(dataframe):
 	pred_price = dataframe['p']
 	actual_price = dataframe['a']
-	print('\n',pred_price, '\n')
-	print('\n',actual_price, '\n')
+	#print('\n',pred_price, '\n')
+	#print('\n',actual_price, '\n')
 	n = len(pred_price)
 	verschil_vec = (pred_price - actual_price)
 	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
 	variance = (1 / n) * np.sum((verschil_vec - mean_verschil) ** 2)
-	print("Gemiddelde afwijking in prijs:", mean_verschil)
-	print("Variantie:", variance)
+	#print("Gemiddelde afwijking in prijs:", mean_verschil)
+	#print("Variantie:", variance)
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
 	return error
+
+def PCA_dimred(matrix, dim):
+	pca = PCA(n_components=dim)
+	pca.fit(matrix)
+	reduced_matrix = pca.transform(matrix)
+	#print(pca.explained_variance_ratio_)
+	return reduced_matrix
 
 def validation_split(data, ratio):
 	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=42)
 	return t_x, t_y, v_x, v_y
+
+def calc_VIF(X, y):
+	vif = pd.DataFrame()
+	vif["VIF Factor"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+	vif["features"] = X.columns
+	print(vif.round(1))
 
 # Expects a dataframe of one column:
 # the predicted price
@@ -38,8 +56,47 @@ def write_submission(price_df, csv_name):
 	submission_df = submission_df.rename(columns = {'p':'price'})
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
+def plot_PCA_options(training_set, training_target, validation_set, validation_target):
+	dim_list = []
+	error_list = []
+	dim = 1
+	best_dim = (0, 100)
+	for i in range(25):
+		dim_list.append(dim)
+		#print("DIM",dim)
+		reduced_train_X = PCA_dimred(training_set, dim)
+		#print("DIM2", dim)
+		reduced_valid_X = PCA_dimred(validation_set, dim)
+		#print("DIM3", dim)
+		#print("reduced TRAIN X", reduced_train_X.shape)
+		#print("reduced VALID X", reduced_valid_X.shape)
+		#print("train target", training_target.shape)
+		#print("valid target", validation_target.shape)
+		prediction = learning_algorithms.ridge(reduced_train_X, training_target, reduced_valid_X, validation_target)
+		error = calc_error(prediction)
+		error_list.append(error)
+		if error < best_dim[1]:
+			best_dim = (dim, error)
+		dim += 1
+	plt.scatter(dim_list, error_list)
+	plt.show()
+	return dim_list, error_list, best_dim
+
 def main():
 	clean_data = clean.clean_main()
+	#print(clean_data.shape)
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
-	return calc_error(prediction)
+	#print(training_set.shape)
+	#print(validation_set.shape)
+	#X = training_set[:, 3:16]
+	#calc_VIF(pd.DataFrame(X), pd.DataFrame(training_target))
+	#reduced_training_set = PCA_dimred(training_set, 90)
+	#reduced_validation_set = PCA_dimred(validation_set, 10)
+	#print(reduced_training_set.shape, reduced_validation_set.shape)
+	dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
+	print("BEST DIMENSION:", best_dim[0], "with a dimension of:", best_dim[1])
+	#print(reduced_matrix[0:3, :])
+	#prediction = learning_algorithms.ridge(reduced_training_set, training_target, reduced_validation_set, validation_target)
+	#print(calc_error(prediction))
+
+main()
