@@ -41,8 +41,8 @@ def plot_PCA_options(training_set, training_target, validation_set, validation_t
 	plt.scatter(dim_list, error_list)
 	plt.show()
 	# VIFS
-	reduced_train_X = PCA_dimred(training_set, best_dim[0])
-	print("VIF of best reduction:", calc_VIF(reduced_train_X, training_target))
+	#reduced_train_X = PCA_dimred(training_set, best_dim[0])
+	#print("VIF of best reduction:", calc_VIF(reduced_train_X, training_target))
 	return dim_list, error_list, best_dim
 
 def PCA_dimred(matrix, dim):
