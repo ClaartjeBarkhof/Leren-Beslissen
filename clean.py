@@ -34,7 +34,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=50000)
+	data = pd.read_table(filepath, nrows=10000)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -62,10 +62,10 @@ def tokenize(description):
         print("error with description:", description)
         return []
 
-def add_tokenize_cols(data):
-	data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
-	data['description_len'] = data['tokenized_description'].apply(lambda x: len(x))
-	return
+def add_description_len(data):
+	#data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
+	data['description_len'] = data['item_description'].apply(lambda x: x.count(' '))
+	return data
 
 
 def TFidf(data):
@@ -131,6 +131,7 @@ def clean_main():
 	print("----%s seconds ----" %(time.time()-t_2))
 	#print("----%s seconds ----" %(time.time()-t_1))
 	t_2 = time.time()
+#	data = add_description_len(data)
 
 	#print("----%s seconds ----" %(time.time()-t_2))
 	print("----%s seconds ----" %(time.time()-t_2))
@@ -140,7 +141,7 @@ def clean_main():
 	fileObject = open(fileName,'wb')
 	pickle.dump(data, fileObject)
 	fileObject.close()
-#	data = scale(data)
+	#data = scale(data)
 	return data
 
 #clean_main()

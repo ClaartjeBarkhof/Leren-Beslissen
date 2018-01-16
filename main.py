@@ -81,9 +81,9 @@ def main(clean_data=True):
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-#	dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
-#	print("BEST DIMENSION:", best_dim[0], "with an error of:", best_dim[1])
-	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
+	#dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
+	#print("BEST DIMENSION:", best_dim[0], "with an error of:", best_dim[1])
+	prediction = learning_algorithms.ridge(training_set, training_target, validation_set, validation_target)
 	print(calc_error(prediction))
 
-main()
+main(clean_data=True)
