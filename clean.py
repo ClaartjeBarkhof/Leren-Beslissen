@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import nltk
 import pickle as pickle
+import operator
 
 import numpy as np
 # nltk.download('tokenizer')
@@ -22,8 +23,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
-
-MAX_FEATURES_ITEM_DESCRIPTION = 50000
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
 INSTANCES = 10000
 
@@ -75,6 +75,9 @@ def TFidf(data):
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
 	tf_idf = pd.DataFrame(tf_idf)
+	#vocab = tv.vocabulary_
+	#sorted_vocab = sorted(vocab.items(), key=operator.itemgetter(0))
+	#print(sorted_vocab)
 	new_data = data.drop(['item_description', 'price'], axis=1)
 	new_data = pd.concat([new_data, tf_idf, price], axis = 1)
 	return(new_data)
