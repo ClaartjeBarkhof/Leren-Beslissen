@@ -23,7 +23,10 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
-MAX_FEATURES_ITEM_DESCRIPTION = 5000
+MAX_FEATURES_ITEM_DESCRIPTION = 50000
+
+INSTANCES = 10000
+
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
@@ -34,7 +37,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=10000)
+	data = pd.read_table(filepath, nrows=INSTANCES)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -66,7 +69,6 @@ def add_description_len(data):
 	#data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
 	data['description_len'] = data['item_description'].apply(lambda x: x.count(' '))
 	return data
-
 
 def TFidf(data):
 	price = data['price']
@@ -103,45 +105,23 @@ def scale(data):
 	return(data)
 	
 def clean_main():
+	t_start = time.time()
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:10000]
-	#data = data.iloc[0:100]
-	#print(data.shape)
-	#data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
+	data = add_description_len(data)
 	data = split_catagories(data)
-
-
-
-	print("----%s seconds ----" %(time.time()-t_start))
-	#print("----%s seconds ----" %(time.time()-t_start))
-	t_1 = time.time()
-
-	t_1 = time.time()
-
-	print("----%s seconds ----" %(time.time()-t_1))
-
-	t_2 = time.time()
 	data = bin_cleaning_data(data)
-
 #	data = data.drop(['item_description'], axis=1)
 	data = TFidf(data)
 	data = data.as_matrix()
-
-	print("----%s seconds ----" %(time.time()-t_2))
-	#print("----%s seconds ----" %(time.time()-t_1))
-	t_2 = time.time()
-#	data = add_description_len(data)
-
-	#print("----%s seconds ----" %(time.time()-t_2))
-	print("----%s seconds ----" %(time.time()-t_2))
-
+	print("ClEANING TIME:")
+	print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
-	fileName = '../clean_matrix.pickle'
-	fileObject = open(fileName,'wb')
-	pickle.dump(data, fileObject)
-	fileObject.close()
+	#fileName = '../clean_matrix.pickle'
+	#fileObject = open(fileName,'wb')
+	#pickle.dump(data, fileObject)
+	#fileObject.close()
 	#data = scale(data)
 	return data
 
