@@ -41,7 +41,7 @@ def main():
 #	print()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
 
-	print(prediction)
+#	print(prediction)
 	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
 	return calc_error(prediction)
 
