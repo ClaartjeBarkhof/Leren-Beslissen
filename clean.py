@@ -69,11 +69,12 @@ def add_description_len(data):
 
 
 def TFidf(data):
+	price = data['price']
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
 	tf_idf = pd.DataFrame(tf_idf)
-	new_data = data.drop(['item_description'], axis=1)
-	new_data = pd.concat([new_data, tf_idf], axis = 1)
+	new_data = data.drop(['item_description', 'price'], axis=1)
+	new_data = pd.concat([new_data, tf_idf, price], axis = 1)
 	return(new_data)
 
 def binary_encoding(column, oh_encoder):
