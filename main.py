@@ -20,8 +20,6 @@ import matplotlib.pyplot as plt
 def calc_error(dataframe):
 	pred_price = dataframe['p']
 	actual_price = dataframe['a']
-	#print('\n',pred_price, '\n')
-	#print('\n',actual_price, '\n')
 	n = len(pred_price)
 	verschil_vec = (pred_price - actual_price)
 	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
@@ -63,15 +61,8 @@ def plot_PCA_options(training_set, training_target, validation_set, validation_t
 	best_dim = (0, 100)
 	for i in range(25):
 		dim_list.append(dim)
-		#print("DIM",dim)
 		reduced_train_X = PCA_dimred(training_set, dim)
-		#print("DIM2", dim)
 		reduced_valid_X = PCA_dimred(validation_set, dim)
-		#print("DIM3", dim)
-		#print("reduced TRAIN X", reduced_train_X.shape)
-		#print("reduced VALID X", reduced_valid_X.shape)
-		#print("train target", training_target.shape)
-		#print("valid target", validation_target.shape)
 		prediction = learning_algorithms.ridge(reduced_train_X, training_target, reduced_valid_X, validation_target)
 		error = calc_error(prediction)
 		error_list.append(error)
@@ -82,21 +73,16 @@ def plot_PCA_options(training_set, training_target, validation_set, validation_t
 	plt.show()
 	return dim_list, error_list, best_dim
 
-def main():
-	clean_data = clean.clean_main()
-	#print(clean_data.shape)
+def main(clean_data=False):
+	if clean_data:
+		clean_data = clean.clean_main()
+	else:
+		fileObject = open('../clean_matrix.pickle','rb')
+		clean_data = pickle.load(fileObject)
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	#print(training_set.shape)
-	#print(validation_set.shape)
-	#X = training_set[:, 3:16]
-	#calc_VIF(pd.DataFrame(X), pd.DataFrame(training_target))
-	#reduced_training_set = PCA_dimred(training_set, 90)
-	#reduced_validation_set = PCA_dimred(validation_set, 10)
-	#print(reduced_training_set.shape, reduced_validation_set.shape)
 	dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
-	print("BEST DIMENSION:", best_dim[0], "with a dimension of:", best_dim[1])
-	#print(reduced_matrix[0:3, :])
-	#prediction = learning_algorithms.ridge(reduced_training_set, training_target, reduced_validation_set, validation_target)
-	#print(calc_error(prediction))
+	print("BEST DIMENSION:", best_dim[0], "with an error of:", best_dim[1])
+	#prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
+	print(calc_error(prediction))
 
 main()
