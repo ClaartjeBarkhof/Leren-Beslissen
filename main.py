@@ -33,7 +33,7 @@ def main(clean_data=False):
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	best_dim = analyse.analyse_main(training_set, training_target, validation_set, validation_target)
+	#best_dim = analyse.analyse_main(training_set, training_target, validation_set, validation_target)
 	prediction = learning_algorithms.ridge(training_set, training_target, validation_set, validation_target)
 	print(analyse.calc_error(prediction))
 
