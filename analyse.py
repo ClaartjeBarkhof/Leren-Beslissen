@@ -4,6 +4,7 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import learning_algorithms
 import numpy as np
+import pandas as pd
 #import main
 
 # Cost function
@@ -52,6 +53,7 @@ def PCA_dimred(matrix, dim):
 	return reduced_matrix
 
 def calc_VIF(X, y):
+	X = pd.DataFrame(X)
 	vif = pd.DataFrame()
 	vif["VIF Factor"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
 	vif["features"] = X.columns
