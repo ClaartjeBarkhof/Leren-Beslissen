@@ -15,8 +15,6 @@ import category_encoders as ce
 def calc_error(dataframe):
 	pred_price = dataframe['p']
 	actual_price = dataframe['a']
-	print('\n',pred_price, '\n')
-	print('\n',actual_price, '\n')
 	n = len(pred_price)
 	verschil_vec = (pred_price - actual_price)
 	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
@@ -38,11 +36,14 @@ def write_submission(price_df, csv_name):
 	submission_df = submission_df.rename(columns = {'p':'price'})
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
-def main():
-	clean_data = clean.clean_main()
-#	print()
+def main(load_data=True):
+	if load_data:
+		fileObject = open('../clean_matrix.pickle','rb')
+		clean_data = pickle.load(fileObject)
+	else:
+		clean_data = clean.clean_main()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-
-	print(prediction)
 	prediction = learning_algorithms.ann_regression(training_set, training_target, validation_set, validation_target)
 	return calc_error(prediction)
+
+main()
