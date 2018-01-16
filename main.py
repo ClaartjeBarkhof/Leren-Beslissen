@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import analyse
 
 def validation_split(data, ratio):
-	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=42)
+	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=40)
 	return t_x, t_y, v_x, v_y
 
 # Expects a dataframe of one column:
