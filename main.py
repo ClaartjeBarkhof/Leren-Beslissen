@@ -35,7 +35,6 @@ def validation_split(data, ratio):
     t_y = training_set[:, -1]
     v_x = validation_set[:, :-1]
     v_y = validation_set[:, -1]
-
     return t_x, t_y, v_x, v_y
 
 # Expects a dataframe of one column:
@@ -48,7 +47,6 @@ def write_submission(price_df, csv_name):
 
 def main():
 	clean_data = clean.clean_main()
-#	print()
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
 
 	print(prediction)
