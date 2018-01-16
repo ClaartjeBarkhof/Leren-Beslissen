@@ -20,8 +20,10 @@ from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
+MAX_FEATURES_ITEM_DESCRIPTION = 5000
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
@@ -65,19 +67,31 @@ def add_description_len(data):
 	data['description_len'] = data['item_description'].apply(lambda x: x.count(' '))
 	return data
 
+
+def TFidf(data):
+	price = data['price']
+	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
+	tf_idf = tv.fit_transform(data['item_description']).toarray()
+	tf_idf = pd.DataFrame(tf_idf)
+	new_data = data.drop(['item_description', 'price'], axis=1)
+	new_data = pd.concat([new_data, tf_idf, price], axis = 1)
+	return(new_data)
+
 def binary_encoding(column, oh_encoder):
 	oh_encoder = oh_encoder.fit(np.array(column))
 	column_bin = oh_encoder.transform(np.array(column))
 	return column_bin
 
 def bin_cleaning_data(data):
-	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping']], axis=1)
+	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping'], data['item_description']], axis=1)
+#	new_data = data.drop(['name', 'price', 'brand_name', 'category_0', 'category_1', 'category_2', 'category_3', 'category_4'])
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i])], axis=1)
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5])], axis=1)
 	new_data = pd.concat([new_data, data['price']], axis=1)
-	return new_data.as_matrix()
+#	return new_data.as_matrix()
+	return new_data
 
 def scale(data):
 	# standard_scaler.fit(data[:,1])
@@ -90,20 +104,33 @@ def scale(data):
 	
 def clean_main():
 	data = open_tsv("../train.tsv")
+	data = data.iloc[0:10000]
 	#data = data.iloc[0:100]
 	#print(data.shape)
 	#data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
 	data = add_description_len(data)
-
-	#print("----%s seconds ----" %(time.time()-t_start))
-	t_1 = time.time()
 	data = split_catagories(data)
 
-	#print("----%s seconds ----" %(time.time()-t_1))
+	#print("----%s seconds ----" %(time.time()-t_start))
+	#print("----%s seconds ----" %(time.time()-t_start))
+	t_1 = time.time()
+
+	t_1 = time.time()
+
+	print("----%s seconds ----" %(time.time()-t_1))
+
 	t_2 = time.time()
 	data = bin_cleaning_data(data)
+#	data = data.drop(['item_description'], axis=1)
+	data = TFidf(data)
+	data = data.as_matrix()
+
+	print("----%s seconds ----" %(time.time()-t_2))
+	#print("----%s seconds ----" %(time.time()-t_1))
+	t_2 = time.time()
+#	data = add_description_len(data)
 
 	#print("----%s seconds ----" %(time.time()-t_2))
 	print("----%s seconds ----" %(time.time()-t_2))
