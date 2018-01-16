@@ -32,7 +32,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=10000)
+	data = pd.read_table(filepath, nrows=1000)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -95,26 +95,24 @@ def clean_main():
 	#data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
+	data = add_description_len(data)
 
 	#print("----%s seconds ----" %(time.time()-t_start))
 	t_1 = time.time()
-
 	data = split_catagories(data)
 
 	#print("----%s seconds ----" %(time.time()-t_1))
 	t_2 = time.time()
 	data = bin_cleaning_data(data)
 
-	data = add_description_len(data)
-
 	#print("----%s seconds ----" %(time.time()-t_2))
 	print("----%s seconds ----" %(time.time()-t_2))
 
 	# Save cleaned data matrix in file
-	fileName = '../clean_matrix.pickle'
-	fileObject = open(fileName,'wb')
-	pickle.dump(data, fileObject)
-	fileObject.close()
+	#fileName = '../clean_matrix.pickle'
+	#fileObject = open(fileName,'wb')
+	#pickle.dump(data, fileObject)
+	#fileObject.close()
 	#data = scale(data)
 	return data
 
