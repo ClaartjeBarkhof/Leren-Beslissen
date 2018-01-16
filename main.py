@@ -37,7 +37,7 @@ def PCA_dimred(matrix, dim):
 	return reduced_matrix
 
 def validation_split(data, ratio):
-	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=42)
+	t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=40)
 	return t_x, t_y, v_x, v_y
 
 def calc_VIF(X, y):
@@ -81,9 +81,10 @@ def main(clean_data=True):
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
 	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	#dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
-	#print("BEST DIMENSION:", best_dim[0], "with an error of:", best_dim[1])
+#	dim_list, error_list, best_dim = plot_PCA_options(training_set, training_target, validation_set, validation_target)
+#	print("BEST DIMENSION:", best_dim[0], "with an error of:", best_dim[1])
 	prediction = learning_algorithms.ridge(training_set, training_target, validation_set, validation_target)
+
 	print(calc_error(prediction))
 
 main(clean_data=True)
