@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import lightgbm as lgb
+#import lightgbm as lgb
 from sklearn import neural_network
 from sklearn import linear_model
 from sklearn.tree import DecisionTreeRegressor
@@ -33,9 +33,36 @@ def ridge(training_set, training_target, validation_set, validation_target):
 	prediction = prediction_model.predict(validation_set)
 	return pd.DataFrame({'p':prediction, 'a':validation_target})
 
+params = {
+        'learning_rate': 0.95,
+        'application': 'regression',
+        'max_depth': 3,
+        'num_leaves': 130,
+        'verbosity': -1,
+        'max_bin' :8192,
+        'metric': 'RMSE',
+        'data_random_seed': 2,
+        'bagging_fraction': 1,
+        'nthread': 4
+    }
+
 def lgbm(training_set, training_target, validation_set, validation_target):
-	d_train = lgb.Dataset(training_set, training_target, max_bin=8192)
-	prediction_model = lgb.train(params, train_set=d_train, num_boost_round=240, valid_sets=watchlist,
-		early_stopping_rounds=20, verbose_eval=10, categorical_feature=cat_features)
+	d_train = lgb.Dataset(training_set, label=training_target)
+	d_valid = lgb.Dataset(validation_set, label=validation_target)
+	watchlist = [d_train, d_valid]
+	model = lgb.train(params, train_set=d_train, num_boost_round=7500, valid_sets=watchlist, \
+		early_stopping_rounds=1000, verbose_eval=1000)
+	predsL = model.predict(validation_set)
+	return pd.DataFrame({'p':predsL, 'a':validation_target})
+
+def lgbmRidge(training_set, training_target, validation_set, validation_target):
+	prediction_model = Ridge()
+	prediction_model.fit(training_set, training_target)
 	prediction = prediction_model.predict(validation_set)
-	return pd.DataFrame({'p':prediction, 'a':validation_target})
+	d_train = lgb.Dataset(training_set, label=training_target)
+	d_valid = lgb.Dataset(validation_set, label=validation_target)
+	watchlist = [d_train, d_valid]
+	model = lgb.train(params, train_set=d_train, num_boost_round=7500, valid_sets=watchlist, \
+		early_stopping_rounds=1000, verbose_eval=1000)
+	predsL = model.predict(validation_set)
+	return pd.DataFrame({'p':(0.5*predsL+0.5*prediction),'a':validation_target})

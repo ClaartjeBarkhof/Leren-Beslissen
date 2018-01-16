@@ -27,7 +27,6 @@ def validation_split(data, ratio):
     validation_set = data[training_size:]
     return training_set, validation_set
 
-
 # input_train = pd.read_table("../train.tsv")
 # input_train_txt = input_train.as_matrix()
 # target_train = input_train['price']
