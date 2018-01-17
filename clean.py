@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import nltk
+#nltk.download()
 import pickle as pickle
 import operator
 
@@ -27,11 +28,10 @@ import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-<<<<<<< HEAD
+
+INSTANCES = 5000
+
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
-=======
->>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
-INSTANCES = 100000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -128,9 +128,11 @@ def replace_undefined_brand(item_name, brand_name, unique_brands):
 		intersection = set(tokens) & set(unique_brands)
 		if intersection:
 			brand = intersection.pop()
-			if type(brand) != str:
-				result = tuple_to_string(brand)
-				return tuple_to_string(brand)
+			while intersection:
+				new_brand = intersection.pop()
+				if type(new_brand) == tuple:
+					brand = new_brand
+					return tuple_to_string(brand)
 			return brand
 		else:
 			return "undefined"
@@ -155,7 +157,7 @@ def fill_in_brand(data):
 
 def get_sentiment(data):
 	sentiment_analyzer = SentimentIntensityAnalyzer()
-	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['pos'], axis=1)
+	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
 	return data
 
 def clean_main():
@@ -164,17 +166,12 @@ def clean_main():
 	t_start = time.time()
 	data = replace_NAN(data)
 	data = fill_in_brand(data)
-	#data = add_description_len(data)
+	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-<<<<<<< HEAD
 	data = data.drop(['item_description'], axis=1)
 #	data = TFidf(data)
-=======
 	data = get_sentiment(data)
-#	data = data.drop(['item_description'], axis=1)
-	#data = TFidf(data)
->>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
