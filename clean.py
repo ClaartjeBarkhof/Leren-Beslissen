@@ -15,6 +15,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem import PorterStemmer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
@@ -22,10 +23,9 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-MAX_FEATURES_ITEM_DESCRIPTION = 50000
-
-INSTANCES = 10000
+INSTANCES = 100000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -103,17 +103,62 @@ def scale(data):
 	data[:,2] = standard_scaler.transform(np.transpose(data[:,2]))
 
 	return(data)
-	
+
+def tuple_to_string(brand):
+	result = ""
+	for elm in brand:
+		result += " " + elm
+	return result[1:]
+
+def replace_undefined_brand(item_name, brand_name, unique_brands):
+	if brand_name == 'undefined':
+		tokens = item_name.split(" ")
+		tokens.extend(list(zip(tokens, tokens[1:])))
+		intersection = set(tokens) & set(unique_brands)
+		if intersection:
+			brand = intersection.pop()
+			if type(brand) != str:
+				result = tuple_to_string(brand)
+				return tuple_to_string(brand)
+			return brand
+		else:
+			return "undefined"
+	else:
+		return brand_name
+
+def find_brands(all_brands):
+	unique_brands_raw = list(set(all_brands) - {'undefined'})
+	unique_brands = []
+	for elm in unique_brands_raw:
+		if " " in elm:
+			tokens = elm.split(" ")
+			unique_brands.append(tuple(tokens))
+		else:
+			unique_brands.append(elm)
+	return unique_brands
+
+def fill_in_brand(data):
+	unique_brands = find_brands(data['brand_name'])
+	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+	return data
+
+def get_sentiment(data):
+	sentiment_analyzer = SentimentIntensityAnalyzer()
+	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['pos'], axis=1)
+	return data
+
 def clean_main():
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
 	t_start = time.time()
 	data = replace_NAN(data)
-	data = add_description_len(data)
+	data = fill_in_brand(data)
+	#data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
+	data = get_sentiment(data)
 #	data = data.drop(['item_description'], axis=1)
-	data = TFidf(data)
+	#data = TFidf(data)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
