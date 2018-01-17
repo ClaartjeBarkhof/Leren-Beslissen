@@ -21,11 +21,11 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import analyse
 
 
-MAX_FEATURES_ITEM_DESCRIPTION = 50000
-
-INSTANCES = 10000
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
+INSTANCES = 100000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -74,6 +74,8 @@ def TFidf(data):
 	price = data['price']
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
+	tf_idf = analyse.PCA_dimred(tf_idf, 1)
+
 	tf_idf = pd.DataFrame(tf_idf)
 	new_data = data.drop(['item_description', 'price'], axis=1)
 	new_data = pd.concat([new_data, tf_idf, price], axis = 1)
@@ -112,8 +114,8 @@ def clean_main():
 	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-#	data = data.drop(['item_description'], axis=1)
-	data = TFidf(data)
+	data = data.drop(['item_description'], axis=1)
+#	data = TFidf(data)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
