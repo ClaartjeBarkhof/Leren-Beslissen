@@ -24,10 +24,14 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-INSTANCES = 100
+
+INSTANCES = 5000
+
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -76,6 +80,8 @@ def TFidf(data):
 	price = data['price']
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
+	tf_idf = analyse.PCA_dimred(tf_idf, 1)
+
 	tf_idf = pd.DataFrame(tf_idf)
 	#vocab = tv.vocabulary_
 	#sorted_vocab = sorted(vocab.items(), key=operator.itemgetter(0))
@@ -122,9 +128,11 @@ def replace_undefined_brand(item_name, brand_name, unique_brands):
 		intersection = set(tokens) & set(unique_brands)
 		if intersection:
 			brand = intersection.pop()
-			if type(brand) != str:
-				result = tuple_to_string(brand)
-				return tuple_to_string(brand)
+			while intersection:
+				new_brand = intersection.pop()
+				if type(new_brand) == tuple:
+					brand = new_brand
+					return tuple_to_string(brand)
 			return brand
 		else:
 			return "undefined"
@@ -149,7 +157,7 @@ def fill_in_brand(data):
 
 def get_sentiment(data):
 	sentiment_analyzer = SentimentIntensityAnalyzer()
-	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['pos'], axis=1)
+	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
 	return data
 
 def clean_main():
@@ -158,12 +166,12 @@ def clean_main():
 	t_start = time.time()
 	data = replace_NAN(data)
 	data = fill_in_brand(data)
-	#data = add_description_len(data)
+	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
+	data = data.drop(['item_description'], axis=1)
+#	data = TFidf(data)
 	data = get_sentiment(data)
-#	data = data.drop(['item_description'], axis=1)
-	#data = TFidf(data)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
