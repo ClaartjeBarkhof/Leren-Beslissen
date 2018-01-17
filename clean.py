@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import nltk
+#nltk.download()
 import pickle as pickle
 import operator
 
@@ -26,7 +27,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-INSTANCES = 100000
+INSTANCES = 100
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
