@@ -27,11 +27,7 @@ import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-<<<<<<< HEAD
-MAX_FEATURES_ITEM_DESCRIPTION = 10000
-=======
->>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
-INSTANCES = 100000
+INSTANCES = 10000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -101,8 +97,12 @@ def bin_cleaning_data(data):
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i])], axis=1)
+
+
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5])], axis=1)
 	new_data = pd.concat([new_data, data['price']], axis=1)
+
+
 #	return new_data.as_matrix()
 	return new_data
 
@@ -163,18 +163,27 @@ def clean_main():
 	data = open_tsv("../train.tsv")
 	t_start = time.time()
 	data = replace_NAN(data)
+#	print(data.shape)
+#	print(data.loc[1325])
+
+#	print(data.loc[(data['price'] == 0)])
+	data = data[(data.price > 0)]
+	data = data.reset_index()
+#	data = data.reindex(list(np.arange(data.shape[0])))
+#	print(data.loc[1])
 	data = fill_in_brand(data)
-	#data = add_description_len(data)
+
+	data = add_description_len(data)
 	data = split_catagories(data)
+
+	print(data.head())
+
 	data = bin_cleaning_data(data)
-<<<<<<< HEAD
-	data = data.drop(['item_description'], axis=1)
-#	data = TFidf(data)
-=======
+
+	print(data.head())
 	data = get_sentiment(data)
 #	data = data.drop(['item_description'], axis=1)
 	#data = TFidf(data)
->>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
