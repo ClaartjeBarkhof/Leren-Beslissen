@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import nltk
 import pickle as pickle
+import operator
 
 import numpy as np
 # nltk.download('tokenizer')
@@ -15,15 +16,23 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem import PorterStemmer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import analyse
 
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-MAX_FEATURES_ITEM_DESCRIPTION = 5000
+<<<<<<< HEAD
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
+=======
+>>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
+INSTANCES = 100000
+
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
 stop_words = set(stopwords.words('english'))
@@ -34,7 +43,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=1000)
+	data = pd.read_table(filepath, nrows=INSTANCES)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -67,12 +76,16 @@ def add_description_len(data):
 	data['description_len'] = data['item_description'].apply(lambda x: x.count(' '))
 	return data
 
-
 def TFidf(data):
 	price = data['price']
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
+	tf_idf = analyse.PCA_dimred(tf_idf, 1)
+
 	tf_idf = pd.DataFrame(tf_idf)
+	#vocab = tv.vocabulary_
+	#sorted_vocab = sorted(vocab.items(), key=operator.itemgetter(0))
+	#print(sorted_vocab)
 	new_data = data.drop(['item_description', 'price'], axis=1)
 	new_data = pd.concat([new_data, tf_idf, price], axis = 1)
 	return(new_data)
@@ -101,40 +114,70 @@ def scale(data):
 	data[:,2] = standard_scaler.transform(np.transpose(data[:,2]))
 
 	return(data)
-	
+
+def tuple_to_string(brand):
+	result = ""
+	for elm in brand:
+		result += " " + elm
+	return result[1:]
+
+def replace_undefined_brand(item_name, brand_name, unique_brands):
+	if brand_name == 'undefined':
+		tokens = item_name.split(" ")
+		tokens.extend(list(zip(tokens, tokens[1:])))
+		intersection = set(tokens) & set(unique_brands)
+		if intersection:
+			brand = intersection.pop()
+			if type(brand) != str:
+				result = tuple_to_string(brand)
+				return tuple_to_string(brand)
+			return brand
+		else:
+			return "undefined"
+	else:
+		return brand_name
+
+def find_brands(all_brands):
+	unique_brands_raw = list(set(all_brands) - {'undefined'})
+	unique_brands = []
+	for elm in unique_brands_raw:
+		if " " in elm:
+			tokens = elm.split(" ")
+			unique_brands.append(tuple(tokens))
+		else:
+			unique_brands.append(elm)
+	return unique_brands
+
+def fill_in_brand(data):
+	unique_brands = find_brands(data['brand_name'])
+	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+	return data
+
+def get_sentiment(data):
+	sentiment_analyzer = SentimentIntensityAnalyzer()
+	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['pos'], axis=1)
+	return data
+
 def clean_main():
+	t_start = time.time()
 	data = open_tsv("../train.tsv")
-	data = data.iloc[0:10000]
-	#data = data.iloc[0:100]
-	#print(data.shape)
-	#data = data.iloc[0:100000]
 	t_start = time.time()
 	data = replace_NAN(data)
-	data = add_description_len(data)
+	data = fill_in_brand(data)
+	#data = add_description_len(data)
 	data = split_catagories(data)
-
-	#print("----%s seconds ----" %(time.time()-t_start))
-	#print("----%s seconds ----" %(time.time()-t_start))
-	t_1 = time.time()
-
-	t_1 = time.time()
-
-	print("----%s seconds ----" %(time.time()-t_1))
-
-	t_2 = time.time()
 	data = bin_cleaning_data(data)
+<<<<<<< HEAD
+	data = data.drop(['item_description'], axis=1)
+#	data = TFidf(data)
+=======
+	data = get_sentiment(data)
 #	data = data.drop(['item_description'], axis=1)
-	data = TFidf(data)
+	#data = TFidf(data)
+>>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
 	data = data.as_matrix()
-
-	print("----%s seconds ----" %(time.time()-t_2))
-	#print("----%s seconds ----" %(time.time()-t_1))
-	t_2 = time.time()
-#	data = add_description_len(data)
-
-	#print("----%s seconds ----" %(time.time()-t_2))
-	print("----%s seconds ----" %(time.time()-t_2))
-
+	print("ClEANING TIME:")
+	print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
 	#fileName = '../clean_matrix.pickle'
 	#fileObject = open(fileName,'wb')
