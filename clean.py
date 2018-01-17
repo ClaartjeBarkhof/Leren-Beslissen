@@ -23,10 +23,19 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
+<<<<<<< HEAD
 INSTANCES = 50000
+=======
+<<<<<<< HEAD
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
+=======
+>>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
+INSTANCES = 100000
+>>>>>>> 79f67d6165b6d413c58bc9fd8bb9793793326b5e
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -75,6 +84,8 @@ def TFidf(data):
 	price = data['price']
 	tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 	tf_idf = tv.fit_transform(data['item_description']).toarray()
+	tf_idf = analyse.PCA_dimred(tf_idf, 1)
+
 	tf_idf = pd.DataFrame(tf_idf)
 	#vocab = tv.vocabulary_
 	#sorted_vocab = sorted(vocab.items(), key=operator.itemgetter(0))
@@ -162,9 +173,9 @@ def clean_main():
 	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-	data = get_sentiment(data)
 	data = data.drop(['item_description'], axis=1)
-	#data = TFidf(data)
+#	data = TFidf(data)
+	data = get_sentiment(data)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
