@@ -28,10 +28,7 @@ import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-
-INSTANCES = 5000
-
-MAX_FEATURES_ITEM_DESCRIPTION = 10000
+INSTANCES = 10000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -101,8 +98,12 @@ def bin_cleaning_data(data):
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i])], axis=1)
+
+
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5])], axis=1)
 	new_data = pd.concat([new_data, data['price']], axis=1)
+
+
 #	return new_data.as_matrix()
 	return new_data
 
@@ -165,13 +166,17 @@ def clean_main():
 	data = open_tsv("../train.tsv")
 	t_start = time.time()
 	data = replace_NAN(data)
+
+	data = data[(data.price > 0)]
+	data = data.reset_index()
+
 	data = fill_in_brand(data)
 	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-	data = data.drop(['item_description'], axis=1)
-#	data = TFidf(data)
 	data = get_sentiment(data)
+#	data = data.drop(['item_description'], axis=1)
+#	data = TFidf(data)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
