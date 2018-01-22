@@ -63,7 +63,7 @@ def lgbm(training_set, training_target, validation_set, validation_target):
 	d_train = lgb.Dataset(training_set, label=training_target)
 	d_valid = lgb.Dataset(validation_set, label=validation_target)
 	watchlist = [d_train, d_valid]
-	model = lgb.train(params1,bias_train = 1, train_set=d_train, num_boost_round=7500, valid_sets=watchlist, \
+	model = lgb.train(params1, train_set=d_train, num_boost_round=7500, valid_sets=watchlist, \
 		early_stopping_rounds=1000, verbose_eval=1000)
 	predsL = model.predict(validation_set)
 	return pd.DataFrame({'p':predsL, 'a':validation_target})
