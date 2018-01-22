@@ -16,11 +16,12 @@ import analyse
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 
+
 def validation_split(data):
 	# t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=30)
 	data = shuffle(data)
-	data = data[1:]
-	kf = KFold(n_splits=10)
+	data = data[:, 1:]
+	kf = KFold(n_splits=10, shuffle=True)
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
@@ -29,7 +30,7 @@ def validation_split(data):
 	for train_index, test_index in kf.split(data):
 		X_train, X_test = X[train_index], X[test_index]
 		y_train, y_test = y[train_index], y[test_index]
-		prediction = learning_algorithms.lgbm(X_train, y_train, X_test, y_test)
+		prediction = learning_algorithms.lgbmRidge(X_train, y_train, X_test, y_test)
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)

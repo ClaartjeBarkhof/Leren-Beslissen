@@ -160,6 +160,7 @@ def find_brands(all_brands):
 def fill_in_brand(data):
 	unique_brands = find_brands(data['brand_name'])
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['item_description'], row['brand_name'], unique_brands), axis=1)
 	return data
 
 def get_sentiment(data):
@@ -179,15 +180,20 @@ def clean_main():
 	t_start = time.time()
 	data = replace_NAN(data)
 
+
+# IN Clean file
 	data = data[(data.price > 0)]
 	data = data.reset_index()
 
-	data = fill_in_brand(data)
 	data = add_description_len(data)
 	data = split_catagories(data)
+
+
+
+	data = fill_in_brand(data)
 	data = bin_cleaning_data(data)
-	data = get_sentiment(data)
-#	data = data.drop(['item_description'], axis=1)
+#	data = get_sentiment(data)
+	data = data.drop(['item_description'], axis=1)
 #	data = TFidf(data)
 	data = data.as_matrix()
 
