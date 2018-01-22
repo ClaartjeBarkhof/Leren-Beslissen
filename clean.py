@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 100
+INSTANCES = 100000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
@@ -84,7 +84,13 @@ def fill_in_missing_brandnames(data):
 def split_categories(data):
 	column_split = lambda x: pd.Series([i for i in (x.split('/'))])
 	splitted = data['category_name'].apply(column_split)
+	num_categories = splitted.shape[1]
 	data = pd.concat([data, splitted], axis=1)
+
+	while num_categories < 5:
+		num_categories += 1
+		data[num_categories] = np.nan
+
 	data = data.rename(columns = {0:'category_0', 1:"category_1", 2:"category_2", 3:"category_3", 4:"category_4"})	
 	return data
 
@@ -123,21 +129,9 @@ def clean_main():
 	data = data[(data.price > 0)]
 	data = data.reset_index(drop=True)
 
-	#data = drop_missing_brandnames(data)
-	#blabla = fill_in_missing_brandnames(data)
-
 	data = add_description_len(data)
 	data = split_categories(data)
-	#data = bin_cleaning_data(data)
-	#data = get_sentiment(data)
-#	data = data.drop(['item_description'], axis=1)
-#	data = TFidf(data)
-#	data = data.as_matrix()
 
-#	data = data.drop(['price'], axis=1)
-#	print(data[0:10])
-
-#	cluster(data)
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
