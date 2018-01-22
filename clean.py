@@ -24,6 +24,12 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
+#from sklearn.datasets.samples_generator import make_blobs
+from sklearn.preprocessing import StandardScaler
+
 import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
@@ -198,6 +204,12 @@ def get_sentiment(data):
 	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
 	return data
 
+def cluster(data):
+	db = DBSCAN(min_samples = 2).fit(data)
+	labels = db.labels_
+	print(len(set(labels)))
+	print(set(labels))
+
 def clean_main():
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
@@ -219,6 +231,11 @@ def clean_main():
 #	data = data.drop(['item_description'], axis=1)
 #	data = TFidf(data)
 	data = data.as_matrix()
+
+#	data = data.drop(['price'], axis=1)
+#	print(data[0:10])
+
+#	cluster(data)
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
