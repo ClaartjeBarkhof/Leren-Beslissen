@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 100000
+INSTANCES = 100
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
@@ -120,6 +120,8 @@ def scale(data):
 
 	return(data)
 
+
+
 def clean_main():
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
@@ -141,6 +143,7 @@ def clean_main():
 	#fileObject.close()
 	#data = scale(data)
 	return data
+
 
 #clean_main()
 	
