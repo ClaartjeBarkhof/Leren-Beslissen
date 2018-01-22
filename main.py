@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import analyse
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
+import preprocessing
 
 def validation_split(data):
 	# t_x, v_x, t_y, v_y = train_test_split( data[:,:-1], data[:,-1], test_size=1-ratio, random_state=30)
@@ -50,14 +51,14 @@ def main(clean_data=False):
 	else:
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
-
+	train_X, train_Y, test_X, test_Y = preprocessing.preprocessing_main(clean_data)
 	# training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
-	(error_list,bias_list) = validation_split(clean_data)
+	#(error_list,bias_list) = validation_split(clean_data)
 	#best_dim = analyse.analyse_main(training_set, training_target, validation_set, validation_target)
-	# prediction = learning_algorithms.lgbmRidge(training_set, training_target, validation_set, validation_target)
-	# (error, bias) = analyse.calc_error(prediction)
-	error = sum(error_list)/float(len(error_list))
-	bias = sum(bias_list)/float(len(bias_list))
+	prediction = learning_algorithms.ridge(train_X, train_Y, test_X, test_Y)
+	(error, bias) = analyse.calc_error(prediction)
+	#error = sum(error_list)/float(len(error_list))
+	#bias = sum(bias_list)/float(len(bias_list))
 	print("Bias: ")
 	print(bias)
 	print("Error: ")
