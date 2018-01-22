@@ -19,7 +19,7 @@ import preprocessing
 
 
 def validation_split(data):
-	max_rounds = 3
+	max_rounds = 10
 	kf = KFold(n_splits=10, shuffle = True)
 	kf.get_n_splits(data)
 	error_list = []
@@ -39,6 +39,7 @@ def validation_split(data):
 		bias_list.append(bias)
 		if counter == max_rounds:
 			break
+		counter += 1
 	return error_list , bias_list
 
 # Expects a dataframe of one column:
