@@ -84,8 +84,15 @@ def fill_in_missing_brandnames(data):
 def split_categories(data):
 	column_split = lambda x: pd.Series([i for i in (x.split('/'))])
 	splitted = data['category_name'].apply(column_split)
+	num_categories = splitted.shape[1]
 	data = pd.concat([data, splitted], axis=1)
+
+	# while num_categories < 5:
+	# 	data[num_categories] = np.nan
+	# 	num_categories += 1
+
 	data = data.rename(columns = {0:'category_0', 1:"category_1", 2:"category_2", 3:"category_3", 4:"category_4"})	
+	print(data.head())
 	return data
 
 def tokenize(description):

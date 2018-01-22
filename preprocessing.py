@@ -29,7 +29,7 @@ from sklearn.utils import shuffle
 
 import analyse
 
-MAX_FEATURES_ITEM_DESCRIPTION = 10000
+MAX_FEATURES_ITEM_DESCRIPTION = 100
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -38,6 +38,8 @@ stop_words = set(stopwords.words('english'))
 # First five encoders for categories. Sixth for brands
 standard_scaler = preprocessing.StandardScaler()
 oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
+
+bin_encoding_cols_dict = {}
 
 tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 sentiment_analyzer = SentimentIntensityAnalyzer()
@@ -50,12 +52,20 @@ def TFidf(data, train):
 	tf_idf = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf = pd.DataFrame(tf_idf)
 	data = pd.concat([data, tf_idf], axis = 1)
-	return(data)
+	return data
 
 def binary_encoding(column, oh_encoder, train):
 	if train == True:
 		oh_encoder = oh_encoder.fit(np.array(column))
-	column_bin = oh_encoder.transform(np.array(column))
+
+	if column.isnull().sum() == column.shape[0]:
+		column_bin = pd.DataFrame(np.zeros([column.shape[0], bin_encoding_cols_dict[column.name]]))
+	else:
+		column_bin = oh_encoder.transform(np.array(column))
+
+	if train == True:
+		cols = column_bin.shape[1]
+		bin_encoding_cols_dict[column.name] = cols
 	return column_bin
 
 def bin_cleaning_data(data, train):
@@ -64,9 +74,7 @@ def bin_cleaning_data(data, train):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train)], axis=1)
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train)], axis=1)
-	new_data = pd.concat([new_data, data['price']], axis=1)
 
-#	return new_data.as_matrix()
 	return new_data
 
 def tuple_to_string(brand):
@@ -136,28 +144,28 @@ def split(clean_data, ratio):
 	test_data = test_data.reset_index(drop=True)
 	return train_data, test_data
 
-# input cleaned dataframe, outputs 4 matrices 
-def preprocessing_main(clean_data):
-	train_data, test_data = split(clean_data, 0.7)
+# input cleaned dataframes, outputs 2 matrices
+def preprocessing_main(train_X, test_X):
+	#train_data, test_data = split(clean_data, 0.7)
+	train_X = train_X.drop(['train_id'], axis=1)
+	test_X = test_X.drop(['train_id'], axis=1)
 
 	# functies op train fitten
-	train_data, unique_brands = fill_in_brand_train(train_data)
-	train_data = TFidf(train_data, True)
-	train_data = bin_cleaning_data(train_data, True)
+	train_X, unique_brands = fill_in_brand_train(train_X)
+	train_X = TFidf(train_X, True)
+	train_X = bin_cleaning_data(train_X, True)
 	#train_data = get_sentiment(train_data)
 
 	# functies op test toepassen
-	test_data = fill_in_brand_test(test_data, unique_brands)
-	test_data = TFidf(test_data, False)
-	test_data = bin_cleaning_data(test_data, False)
+	test_X = fill_in_brand_test(test_X, unique_brands)
+	test_X = TFidf(test_X, False)
+	test_X = bin_cleaning_data(test_X, False)
 	#test_data = get_sentiment(test_data)
 
-	train_Y = train_data['price']
-	train_X = train_data.drop(['price', 'item_description'], axis=1)
-	test_Y = test_data['price']
-	test_X = test_data.drop(['price', 'item_description'], axis=1)
+	train_X = train_X.drop(['item_description'], axis=1)
+	test_X = test_X.drop(['item_description'], axis=1)
 
-	return train_X.as_matrix(), train_Y.as_matrix(), test_X.as_matrix(), test_Y.as_matrix()
+	return train_X.as_matrix(), test_X.as_matrix()
 			
 
 
