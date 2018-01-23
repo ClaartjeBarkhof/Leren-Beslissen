@@ -113,6 +113,7 @@ def fill_in_missing_most_common_brandnames_per_cat(data):
 				data.at[index, 'brand_name'] = mc_brandnames_per_cat[row['category_name']]
 	print('undefined after filling in with most_common_per category:', len(data['brand_name'].loc[(data.brand_name == 'undefined')]))
 	print("--------")
+	return data
 
 def replace_undefined_brand(item_name, brand_name, unique_brands):
 	if brand_name == 'undefined':
@@ -191,7 +192,7 @@ def preprocessing_main(train_data, test_data):
 	train_data = train_data[(train_data.price > 0)]
 	train_data = train_data.reset_index(drop=True)
 
-	fill_in_missing_most_common_brandnames_per_cat(train_data)
+	train_data = fill_in_missing_most_common_brandnames_per_cat(train_data)
 
 	train_data = drop_missing_brandnames(train_data)
 	train_data = TFidf(train_data, True)
