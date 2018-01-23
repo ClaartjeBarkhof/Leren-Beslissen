@@ -69,13 +69,22 @@ def binary_encoding(column, oh_encoder, train):
 	return column_bin
 
 def bin_cleaning_data(data, train):
-	new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description']], axis=1)
+	new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description'], data['price']], axis=1)
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train)], axis=1)
 	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train)], axis=1)
 
 	return new_data
+
+def drop_missing_brandnames(data):
+	rows_before_dropping = data.shape[0]
+	data = data[(data.brand_name != 'undefined')]
+	rows_after_dropping = data.shape[0]
+	dropped_rows = rows_before_dropping - rows_after_dropping
+	print("Dropped", dropped_rows, "rows of", rows_before_dropping, "rows in total")
+	data = data.reset_index()
+	return data
 
 def tuple_to_string(brand):
 	result = ""
@@ -124,7 +133,6 @@ def fill_in_brand_test(data, unique_brands):
 	return data
 
 def get_sentiment(data):
-	print(data.iloc[2])
 	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
 	return data
 
@@ -145,27 +153,38 @@ def split(clean_data, ratio):
 	return train_data, test_data
 
 # input cleaned dataframes, outputs 2 matrices
-def preprocessing_main(train_X, test_X):
+def preprocessing_main(train_data, test_data):
 	#train_data, test_data = split(clean_data, 0.7)
-	train_X = train_X.drop(['train_id'], axis=1)
-	test_X = test_X.drop(['train_id'], axis=1)
+	train_data = train_data.drop(['train_id'], axis=1)
+	test_data = test_data.drop(['train_id'], axis=1)
 
 	# functies op train fitten
-	train_X, unique_brands = fill_in_brand_train(train_X)
-	train_X = TFidf(train_X, True)
-	train_X = bin_cleaning_data(train_X, True)
+	train_data, unique_brands = fill_in_brand_train(train_data)
+
+	train_data = train_datadata[(train_data.price > 0)]
+	train_data = train_data.reset_index(drop=True)
+
+	train_data = drop_missing_brandnames(train_data)
+	train_data = TFidf(train_data, True)
+	train_data = bin_cleaning_data(train_data, True)
 	#train_data = get_sentiment(train_data)
 
 	# functies op test toepassen
-	test_X = fill_in_brand_test(test_X, unique_brands)
-	test_X = TFidf(test_X, False)
-	test_X = bin_cleaning_data(test_X, False)
+	test_data = fill_in_brand_test(test_data, unique_brands)
+	test_data = TFidf(test_data, False)
+	test_data = bin_cleaning_data(test_data, False)
 	#test_data = get_sentiment(test_data)
 
-	train_X = train_X.drop(['item_description'], axis=1)
-	test_X = test_X.drop(['item_description'], axis=1)
+	train_data = train_data.drop(['item_description'], axis=1)
+	test_data = test_data.drop(['item_description'], axis=1)
 
-	return train_X.as_matrix(), test_X.as_matrix()
+	train_Y = train_data['price']
+	train_X = train_data.drop(['price'], axis=1)
+
+	test_Y = test_data['price']
+	test_X = test_data.drop(['price'], axis=1)
+
+	return train_X.as_matrix(), test_X.as_matrix(), train_Y.as_matrix(), test_Y.as_matrix()
 			
 
 

@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 10000
+INSTANCES = 30000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
@@ -42,14 +42,6 @@ def replace_NAN(data):
 	data['category_name'] = data['category_name'].fillna('undefined').astype(str)
 	data['brand_name'] = data['brand_name'].fillna('undefined').astype(str)
 	data['item_description'] = data['item_description'].fillna('undefined')
-	return data
-
-def drop_missing_brandnames(data):
-	print('# rows before dropping missing brandnames', data.shape[0])
-	data = data[(data.brand_name == 'undefined')]
-
-	print('# rows after dropping missing brandnames', data.shape[0])
-	data = data.reset_index()
 	return data
 
 '''
@@ -92,7 +84,6 @@ def split_categories(data):
 	# 	num_categories += 1
 
 	data = data.rename(columns = {0:'category_0', 1:"category_1", 2:"category_2", 3:"category_3", 4:"category_4"})	
-	print(data.head())
 	return data
 
 def tokenize(description):
@@ -122,16 +113,11 @@ def scale(data):
 	return(data)
 
 
-
 def clean_main():
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
 	t_start = time.time()
 	data = replace_NAN(data)
-
-	data = data[(data.price > 0)]
-	data = data.reset_index(drop=True)
-
 	data = add_description_len(data)
 	data = split_categories(data)
 
