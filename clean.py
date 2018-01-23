@@ -27,15 +27,7 @@ import analyse
 
 MAX_FEATURES_ITEM_DESCRIPTION = 10000
 
-<<<<<<< HEAD
-INSTANCES = 50000
-=======
-<<<<<<< HEAD
-MAX_FEATURES_ITEM_DESCRIPTION = 10000
-=======
->>>>>>> 1fa9a6e27fa44272f5c36ff414741df503119f86
-INSTANCES = 100000
->>>>>>> 79f67d6165b6d413c58bc9fd8bb9793793326b5e
+INSTANCES = 100
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -101,7 +93,6 @@ def binary_encoding(column, oh_encoder):
 
 def bin_cleaning_data(data):
 	new_data = pd.concat([data['train_id'], data['item_condition_id'], data['shipping'], data['item_description']], axis=1)
-#	new_data = data.drop(['name', 'price', 'brand_name', 'category_0', 'category_1', 'category_2', 'category_3', 'category_4'])
 	for i in range(5):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i])], axis=1)
@@ -173,19 +164,10 @@ def clean_main():
 	data = add_description_len(data)
 	data = split_catagories(data)
 	data = bin_cleaning_data(data)
-	data = data.drop(['item_description'], axis=1)
 #	data = TFidf(data)
 	data = get_sentiment(data)
+	data = data.drop(['item_description'], axis=1)
 	data = data.as_matrix()
 	print("ClEANING TIME:")
 	print("---- %s seconds ----" %(time.time()-t_start))
-	# Save cleaned data matrix in file
-	#fileName = '../clean_matrix.pickle'
-	#fileObject = open(fileName,'wb')
-	#pickle.dump(data, fileObject)
-	#fileObject.close()
-	#data = scale(data)
-	return data
-
-#clean_main()
-	
+	return data	
