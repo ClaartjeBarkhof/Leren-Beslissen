@@ -161,7 +161,7 @@ def preprocessing_main(train_data, test_data):
 	# functies op train fitten
 	train_data, unique_brands = fill_in_brand_train(train_data)
 
-	train_data = train_datadata[(train_data.price > 0)]
+	train_data = train_data[(train_data.price > 0)]
 	train_data = train_data.reset_index(drop=True)
 
 	train_data = drop_missing_brandnames(train_data)
