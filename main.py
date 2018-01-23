@@ -13,10 +13,34 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import analyse
+from sklearn.model_selection import KFold
+from sklearn.utils import shuffle
+import preprocessing
 
-def validation_split(data, ratio):
-	t_x, v_x, t_y, v_y = train_test_split(data[:,:-1], data[:,-1], test_size=1-ratio, random_state=40)
-	return t_x, t_y, v_x, v_y
+
+def validation_split(data):
+	max_rounds = 10
+	kf = KFold(n_splits=10, shuffle = True)
+	kf.get_n_splits(data)
+	error_list = []
+	bias_list = []
+	y = data['price'].as_matrix()
+	X = data.drop(['price'], axis=1)
+	counter = 0
+	for train_index, test_index in kf.split(data):
+		train_X, test_X = X.iloc[train_index], X.iloc[test_index]
+		train_X = train_X.reset_index(drop = True)
+		test_X = test_X.reset_index(drop = True)
+		train_X, test_X = preprocessing.preprocessing_main(train_X, test_X)
+		train_y, test_y = y[train_index], y[test_index]
+		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
+		(error, bias) = analyse.calc_error(prediction)
+		error_list.append(error)
+		bias_list.append(bias)
+		if counter == max_rounds:
+			break
+		counter += 1
+	return error_list , bias_list
 
 # Expects a dataframe of one column:
 # the predicted price
@@ -32,9 +56,16 @@ def main(clean_data=False):
 	else:
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
-	training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
+	#training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
+	(error_list,bias_list) = validation_split(clean_data)
 	#best_dim = analyse.analyse_main(training_set, training_target, validation_set, validation_target)
-	prediction = learning_algorithms.linear_regression(training_set, training_target, validation_set, validation_target)
-	print(analyse.calc_error(prediction))
+	#prediction = learning_algorithms.lgbmRidge(train_X, train_Y, test_X, test_Y)
+	#(error, bias) = analyse.calc_error(prediction)
+	error = sum(error_list)/float(len(error_list))
+	bias = sum(bias_list)/float(len(bias_list))
+	print("Bias: ")
+	print(bias)
+	print("Error: ")
+	print(error)
 
 main(clean_data=True)

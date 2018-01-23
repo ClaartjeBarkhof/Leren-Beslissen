@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import learning_algorithms
 import numpy as np
 import pandas as pd
+#import main
 
 # Cost function
 # Expects a dataframe of two colums:
@@ -13,6 +14,7 @@ import pandas as pd
 def calc_error(dataframe):
 	pred_price = dataframe['p']
 	actual_price = dataframe['a']
+	bias = np.mean(pred_price)-np.mean(actual_price)
 	n = len(pred_price)
 	verschil_vec = (pred_price - actual_price)
 	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
@@ -20,7 +22,7 @@ def calc_error(dataframe):
 	#print("Gemiddelde afwijking in prijs:", mean_verschil)
 	#print("Variantie:", variance)
 	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
-	return error
+	return error, bias
 
 def plot_PCA_options(training_set, training_target, validation_set, validation_target):
 	dim_list = []
