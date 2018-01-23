@@ -19,22 +19,21 @@ import preprocessing
 
 
 def validation_split(data):
-	max_rounds = 1
+	max_rounds = 5
 	kf = KFold(n_splits=10, shuffle = True)
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
-	y = data['price'].as_matrix()
-	X = data.drop(['price'], axis=1)
 	counter = 0
 	for train_index, test_index in kf.split(data):
-		train_X, test_X = X.iloc[train_index], X.iloc[test_index]
-		train_X = train_X.reset_index(drop = True)
-		test_X = test_X.reset_index(drop = True)
-		train_X, test_X = preprocessing.preprocessing_main(train_X, test_X)
-		train_y, test_y = y[train_index], y[test_index]
-		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y)
+		train_data, test_data = data.iloc[train_index], data.iloc[test_index]
+		train_data = train_data.reset_index(drop = True)
+		test_data = test_data.reset_index(drop = True)
+		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
 		(error, bias) = analyse.calc_error(prediction)
+		print("Error:", error)
+		print("Bias:", bias)
 		error_list.append(error)
 		bias_list.append(bias)
 		if counter == max_rounds:
