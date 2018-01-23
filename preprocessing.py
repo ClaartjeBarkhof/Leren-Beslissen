@@ -7,6 +7,7 @@ import operator
 import numpy as np
 import time
 import category_encoders as ce
+import copy
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -83,6 +84,7 @@ def drop_missing_brandnames(data):
 	rows_after_dropping = data.shape[0]
 	dropped_rows = rows_before_dropping - rows_after_dropping
 	print("Dropped", dropped_rows, "rows of", rows_before_dropping, "rows in total")
+	print("--------")
 	data = data.reset_index()
 	return data
 
@@ -91,6 +93,26 @@ def tuple_to_string(brand):
 	for elm in brand:
 		result += " " + elm
 	return result[1:]
+
+def record_most_common_brandnames_per_cat(data):
+	mc_brandnames_per_cat = {}
+	unique_cats = list(set(data['category_name']))
+	for cat in unique_cats:
+		x = data['brand_name'].loc[(data['category_name'] == cat)]
+		counts = x.value_counts().index.tolist()
+		if (len(counts) > 1) and (counts[0] == 'undefined'):
+			mc_brandnames_per_cat[cat] = counts[1]
+		else:
+			mc_brandnames_per_cat[cat] = counts[0]
+	return mc_brandnames_per_cat
+
+def fill_in_missing_most_common_brandnames_per_cat(data):
+	mc_brandnames_per_cat = record_most_common_brandnames_per_cat(data)
+	for index, row in data.iterrows():
+			if data.loc[index].brand_name == 'undefined':
+				data.at[index, 'brand_name'] = mc_brandnames_per_cat[row['category_name']]
+	print('undefined after filling in with most_common_per category:', len(data['brand_name'].loc[(data.brand_name == 'undefined')]))
+	print("--------")
 
 def replace_undefined_brand(item_name, brand_name, unique_brands):
 	if brand_name == 'undefined':
@@ -122,9 +144,14 @@ def find_brands_train(all_brands):
 	return unique_brands
 
 def fill_in_brand_train(data):
+	print("--------")
 	unique_brands = find_brands_train(data['brand_name'])
+	print("undefined before filling in:",len(data[(data.brand_name == 'undefined')]))
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+	print("undefined after filling in from name:",len(data[(data.brand_name == 'undefined')]))
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['item_description'], row['brand_name'], unique_brands), axis=1)
+	print("undefined after filling in from description:",len(data[(data.brand_name == 'undefined')]))
+	print("--------")
 	return data, unique_brands
 
 def fill_in_brand_test(data, unique_brands):
@@ -163,6 +190,8 @@ def preprocessing_main(train_data, test_data):
 
 	train_data = train_data[(train_data.price > 0)]
 	train_data = train_data.reset_index(drop=True)
+
+	fill_in_missing_most_common_brandnames_per_cat(train_data)
 
 	train_data = drop_missing_brandnames(train_data)
 	train_data = TFidf(train_data, True)
