@@ -18,7 +18,7 @@ from sklearn.utils import shuffle
 import preprocessing
 
 def validation_split(data):
-	max_rounds = 1
+	max_rounds = 3
 	kf = KFold(n_splits=10, shuffle = True)
 	kf.get_n_splits(data)
 	error_list = []
@@ -30,6 +30,7 @@ def validation_split(data):
 		test_data = test_data.reset_index(drop = True)
 		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
 		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
+		prediction.loc[prediction['p'] < 0, 'p'] = 0
 		(error, bias) = analyse.calc_error(prediction)
 		print("Error:", error)
 		print("Bias:", bias)

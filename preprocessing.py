@@ -229,13 +229,11 @@ def preprocessing_main(train_data, test_data):
 	# Price = 0 droppen
 	train_data = train_data[(train_data.price > 0)]
 	train_data = train_data.reset_index(drop=True)
-	# functies op train fitten
-	train_data, unique_brands = fill_in_brand_train(train_data)
 
 	# Vul de categorieën die je niet mee wil nemen in. 
-	drop_categories = ['train_id', 'item_description', 'brand_name']
-	train_data = train_data.drop(drop_categories, axis=1)
-	test_data = test_data.drop(drop_categories, axis=1)
+	# drop_categories = ['train_id', 'item_description', 'brand_name']
+	# train_data = train_data.drop(drop_categories, axis=1)
+	# test_data = test_data.drop(drop_categories, axis=1)
 
 	train_data = bin_cleaning_data(train_data, True)
 	#train_data = TFidf(train_data, True)
