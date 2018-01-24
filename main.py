@@ -21,8 +21,13 @@ import preprocessing
 import random
 
 def validation_split(data):
+<<<<<<< HEAD
 	max_rounds = 5
 	kf = KFold(n_splits=3, shuffle = True, random_state=4)
+=======
+	max_rounds = 3
+	kf = KFold(n_splits=10, shuffle = True)
+>>>>>>> f1e3b92be47d3c593b289ed812409cfd480a87bb
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
@@ -32,7 +37,12 @@ def validation_split(data):
 		train_data = train_data.reset_index(drop = True)
 		test_data = test_data.reset_index(drop = True)
 		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+<<<<<<< HEAD
 		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y)
+=======
+		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
+		prediction.loc[prediction['p'] < 0, 'p'] = 0
+>>>>>>> f1e3b92be47d3c593b289ed812409cfd480a87bb
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)
