@@ -19,7 +19,7 @@ import preprocessing
 
 
 def validation_split(data):
-	max_rounds = 5
+	max_rounds = 1
 	kf = KFold(n_splits=10, shuffle = True)
 	kf.get_n_splits(data)
 	error_list = []
