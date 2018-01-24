@@ -4,8 +4,11 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import learning_algorithms
 import numpy as np
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 #import main
+
 
 # Cost function
 # Expects a dataframe of two colums:

@@ -1,3 +1,5 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
 import nltk
@@ -32,7 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 50000
+INSTANCES = 300000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
