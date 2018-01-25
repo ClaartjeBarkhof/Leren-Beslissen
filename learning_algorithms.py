@@ -70,15 +70,15 @@ def lgbm(training_set, training_target, validation_set, validation_target):
 	predsL = model.predict(validation_set)
 	return pd.DataFrame({'p':predsL, 'a':validation_target})
 
-def lgbmRidge(training_set, training_target, validation_set, validation_target):
+def lgbmRidge(training_set, training_target, validation_set, validation_target,rPerc,lPerc):
 	R1prediction_model = Ridge()
 	R1prediction_model.fit(training_set, training_target)
 	R1prediction = R1prediction_model.predict(validation_set)
 
-	R2prediction_model = Ridge(alpha=.6, copy_X=True, fit_intercept=True, max_iter=100,
-		normalize=False, random_state=101, solver='auto', tol=0.01)
-	R2prediction_model.fit(training_set, training_target)
-	R2prediction = R2prediction_model.predict(validation_set)
+	# R2prediction_model = Ridge(alpha=.6, copy_X=True, fit_intercept=True, max_iter=100,
+	# 	normalize=False, random_state=101, solver='auto', tol=0.01)
+	# R2prediction_model.fit(training_set, training_target)
+	# R2prediction = R2prediction_model.predict(validation_set)
 
 	lgbm1_train = lgb.Dataset(training_set, label=training_target)
 	lgbm1_valid = lgb.Dataset(validation_set, label=validation_target)
@@ -86,10 +86,10 @@ def lgbmRidge(training_set, training_target, validation_set, validation_target):
 	lgbm1_model = lgb.train(params1, train_set=lgbm1_train, num_boost_round=7500, valid_sets=watchlist, early_stopping_rounds=1000, verbose_eval=1000)
 	lgbm1_pred = lgbm1_model.predict(validation_set)
 
-	lgbm2_train = lgb.Dataset(training_set, label=training_target)
-	lgbm2_valid = lgb.Dataset(validation_set, label=validation_target)
-	watchlist2 = [lgbm2_train, lgbm2_valid]
-	lgbm2_model = lgb.train(params2, train_set=lgbm2_train, num_boost_round=7500, valid_sets=watchlist2, \
-		early_stopping_rounds=1000, verbose_eval=1000)
-	lgbm2_pred = lgbm2_model.predict(validation_set)
-	return pd.DataFrame({'p':(0.5*lgbm1_pred+0.25*R1prediction+0.15*lgbm2_pred+0.1*R2prediction),'a':validation_target})
+	# lgbm2_train = lgb.Dataset(training_set, label=training_target)
+	# lgbm2_valid = lgb.Dataset(validation_set, label=validation_target)
+	# watchlist2 = [lgbm2_train, lgbm2_valid]
+	# lgbm2_model = lgb.train(params2, train_set=lgbm2_train, num_boost_round=7500, valid_sets=watchlist2, \
+	# 	early_stopping_rounds=1000, verbose_eval=1000)
+	# lgbm2_pred = lgbm2_model.predict(validation_set)
+	return pd.DataFrame({'p':(lPerc*lgbm1_pred+rPerc*R1prediction),'a':validation_target})
