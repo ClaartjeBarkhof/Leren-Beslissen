@@ -1,3 +1,9 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+<<<<<<< HEAD
+warnings.simplefilter(action='ignore', category=UserWarning)
+=======
+>>>>>>> ae3aa840cfecabd627956f5619ddcd50920e461c
 import pandas as pd
 #import matplotlib.pyplot as plt
 import numpy as np
@@ -16,10 +22,11 @@ import analyse
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 import preprocessing
+import random
 
 def validation_split(data):
 	max_rounds = 5
-	kf = KFold(n_splits=10, shuffle = True)
+	kf = KFold(n_splits=3, shuffle = True, random_state=4)
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
@@ -29,15 +36,14 @@ def validation_split(data):
 		train_data = train_data.reset_index(drop = True)
 		test_data = test_data.reset_index(drop = True)
 		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
-		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
+		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y)
 		(error, bias) = analyse.calc_error(prediction)
-		print("Error:", error)
-		print("Bias:", bias)
 		error_list.append(error)
 		bias_list.append(bias)
 		if counter == max_rounds:
 			break
 		counter += 1
+		print(counter)
 	return error_list , bias_list
 
 # Expects a dataframe of one column:
