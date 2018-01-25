@@ -223,7 +223,7 @@ def preprocessing_main(train_data, test_data):
 	# TRAIN
 	# Missing brand_names
 	train_data = fill_in_brand(train_data, unique_brands)
-	train_data = fill_in_missing_most_common_brandnames_per_cat(train_data, mc_brandnames_per_cat)
+	#train_data = fill_in_missing_most_common_brandnames_per_cat(train_data, mc_brandnames_per_cat)
 	#train_data = drop_missing_brandnames(train_data)
 
 	# Price = 0 droppen
@@ -242,7 +242,7 @@ def preprocessing_main(train_data, test_data):
 	# TEST
 	# Missing brand_names
 	test_data = fill_in_brand(test_data, unique_brands)
-	test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
+	#test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
 	
 	test_data = bin_cleaning_data(test_data, False)
 	#test_data = TFidf(test_data, False)

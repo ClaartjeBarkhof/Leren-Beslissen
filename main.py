@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 import pandas as pd
 #import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +22,7 @@ import preprocessing
 
 def validation_split(data):
 	max_rounds = 3
-	kf = KFold(n_splits=10, shuffle = True)
+	kf = KFold(n_splits=10, shuffle = True, random_state=10)
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
