@@ -1,3 +1,5 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
 import nltk
@@ -30,7 +32,8 @@ from sklearn.utils import shuffle
 
 import analyse
 
-MAX_FEATURES_ITEM_DESCRIPTION = 100
+
+MAX_FEATURES_ITEM_DESCRIPTION = 300000
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -100,8 +103,6 @@ def drop_missing_brandnames(data):
 	data = data[(data.brand_name != 'undefined')]
 	rows_after_dropping = data.shape[0]
 	dropped_rows = rows_before_dropping - rows_after_dropping
-	print("Dropped", dropped_rows, "rows of", rows_before_dropping, "rows in total")
-	print("--------")
 	data = data.reset_index(drop=True)
 	return data
 
@@ -134,8 +135,6 @@ def fill_in_missing_most_common_brandnames_per_cat(data, mc_brandnames_per_cat):
 	for index, row in data.iterrows():
 			if data.loc[index].brand_name == 'undefined':
 				data.at[index, 'brand_name'] = mc_brandnames_per_cat[row['category_name']]
-	print('undefined after filling in with most_common_per category:', len(data['brand_name'].loc[(data.brand_name == 'undefined')]))
-	print("--------")
 	return data
 
 def replace_undefined_brand(item_name, brand_name, unique_brands):
@@ -170,16 +169,21 @@ def find_brands(train_data, test_data):
 			unique_brands.append(elm)
 	return unique_brands
 
+
 def fill_in_brand(data, unique_brands):
-	print("--------")
-	print("total:", data.shape[0])
-	
-	print("undefined before filling in:",len(data[(data.brand_name == 'undefined')]))
+	try:
+		data['brand_name']
+	except KeyError:
+		return data
+
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
-	print("undefined after filling in from name:",len(data[(data.brand_name == 'undefined')]))
+
+	try:
+		data['item_description']
+	except KeyError:
+		return data
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['item_description'], row['brand_name'], unique_brands), axis=1)
-	print("undefined after filling in from description:",len(data[(data.brand_name == 'undefined')]))
-	print("--------")
+
 	return data
 
 def fill_in_brand_test(data, unique_brands):
