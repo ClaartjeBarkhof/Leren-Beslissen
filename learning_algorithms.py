@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-#import lightgbm as lgb
+import lightgbm as lgb
 from sklearn import neural_network
 from sklearn import linear_model
 from sklearn.tree import DecisionTreeRegressor
@@ -44,7 +44,11 @@ params1 = {
         'metric': 'RMSE',
         'data_random_seed': 2,
         # 'bagging_fraction': 1,
-        'nthread': 4
+        'nthread': 4,
+        'min_data': 1,
+        'min_data_in_bin': 1
+
+
     }
 
 params2 = {
@@ -56,7 +60,10 @@ params2 = {
         'metric': 'RMSE',
         'data_random_seed': 2,
         # 'bagging_fraction': 1,
-        'nthread': 4
+        'nthread': 4,
+        'min_data': 1,
+        'min_data_in_bin': 1
+
     }
 
 def lgbm(training_set, training_target, validation_set, validation_target):
@@ -91,3 +98,21 @@ def lgbmRidge(training_set, training_target, validation_set, validation_target):
 		early_stopping_rounds=1000, verbose_eval=1000)
 	lgbm2_pred = lgbm2_model.predict(validation_set)
 	return pd.DataFrame({'p':(0.5*lgbm1_pred+0.25*R1prediction+0.15*lgbm2_pred+0.1*R2prediction),'a':validation_target})
+	
+
+def splitted_learning(train_X, test_X, train_y, test_y, train_X_split, train_y_split, test_X_split, test_y_split, ratio):
+	prediction = lgbmRidge(train_X, train_y, test_X, test_y)
+	p = pd.Series()
+	for trainx, trainy, testx, testy in zip(train_X_split, train_y_split, test_X_split, test_y_split):
+		split_prediction = lgbmRidge(trainx, trainy, testx, testy)
+		p = pd.concat([p, split_prediction['p']], axis=0)
+
+	p = p.sort_index(axis = 0)
+
+	prediction['p'] = prediction['p'].apply(lambda x: x*ratio)
+	p = p.apply(lambda x: x*(1-ratio))
+	prediction['p'] = prediction['p'].add(p)
+
+
+#
+	return(prediction)
