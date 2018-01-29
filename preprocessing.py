@@ -34,6 +34,9 @@ import analyse
 
 
 MAX_FEATURES_ITEM_DESCRIPTION = 300000
+MAX_FEATURES_ITEM_NAME = 100
+
+
 
 ps = PorterStemmer()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -46,6 +49,9 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 bin_encoding_cols_dict = {}
 
 tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
+tv_name = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
+
+
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
 def TFidf(data, train):
@@ -56,18 +62,28 @@ def TFidf(data, train):
 
 	if train == True:
 		tf_idf = tv.fit_transform(data['item_description']).toarray()
+		tf_idf_name = tv_name.fit_transform(data['item_name']).toarray()
 	else:
 		tf_idf = tv.transform(data['item_description']).toarray()
+		tf_idf_name = tv_name.transform(data['item_name']).toarray()
+
 	tf_idf = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf = pd.DataFrame(tf_idf)
+	tf_idf_name = analyse.PCA_dimred(tf_idf, 1)
+	tf_idf_name = pd.DataFrame(tf_idf)
+
 	data = pd.concat([data, tf_idf], axis = 1)
+	data['item_name'] = tf_idf_name
 	return data
 
-def binary_encoding(column, oh_encoder, train):
+def binary_encoding(column, oh_encoder, train, category_1):
+
 	if train == True:
 		oh_encoder = oh_encoder.fit(np.array(column))
-
-	if column.isnull().sum() == column.shape[0]:
+		
+	if train == True and column.isnull().sum == column.shape[0]:
+		column_bin = pd.DataFrame(np.zeros([column.shape[0], 1]))
+	elif train == False and column.isnull().sum() == column.shape[0]:
 		column_bin = pd.DataFrame(np.zeros([column.shape[0], bin_encoding_cols_dict[column.name]]))
 	else:
 		column_bin = oh_encoder.transform(np.array(column))
@@ -75,6 +91,10 @@ def binary_encoding(column, oh_encoder, train):
 	if train == True:
 		cols = column_bin.shape[1]
 		bin_encoding_cols_dict[column.name] = cols
+
+	if category_1 == True:
+		column_bin = column_bin.rename(columns = lambda x: x.replace('0_', 'category_'))
+
 	return column_bin
 
 def bin_cleaning_data(data, train):
@@ -83,15 +103,22 @@ def bin_cleaning_data(data, train):
 	for cat in standard_categories:
 		if cat in data.columns:
 			new_data = pd.concat([new_data, data[cat]], axis=1)
+	category_1 = False
 	#new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description'], data['price']], axis=1)
 	for i in range(5):
+		if i == 0:
+			category_1 =True
+		else:
+			category_1 = False
 		if 'category_'+str(i) in data.columns:
-			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train)], axis=1)
+			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train, category_1)], axis=1)
+
 	try:
-		new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train)], axis=1)
-		return new_data
+		new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train, False)], axis=1)
 	except KeyError:
 		return new_data
+	
+	return new_data
 
 def drop_missing_brandnames(data):
 	try:
@@ -227,6 +254,31 @@ def cluster_train(data):
 	print(len(set(labels)))
 	print(set(labels))
 
+def split(clean_data, ratio):
+	clean_data = shuffle(clean_data)
+	clean_data = clean_data.drop(['train_id'], axis=1)
+	length = clean_data.shape[0]
+	train_data = clean_data.iloc[0:int(length*ratio), :]
+	test_data = clean_data.iloc[int(length*ratio):, :]
+	train_data = train_data.reset_index(drop=True)
+	test_data = test_data.reset_index(drop=True)
+	return train_data, test_data
+
+def horizontal_split(train_data, test_data):
+	train_list = []
+	test_list = []
+	for x in range(11):
+		column_name = 'category_'+str(x)
+		if column_name in train_data.columns and column_name in test_data.columns:
+			train_dataframe = train_data.loc[train_data[column_name] == 1]
+			test_dataframe = test_data.loc[test_data[column_name] == 1]
+		else:
+			train_dataframe = None
+			test_dataframe = None
+		train_list.append(train_dataframe)
+		test_list.append(test_dataframe)
+	return(train_list, test_list)
+
 # input cleaned dataframes, outputs 2 matrices
 def preprocessing_main(train_data, test_data, cats):
 	#train_data, test_data = split(clean_data, 0.7)
@@ -270,13 +322,19 @@ def preprocessing_main(train_data, test_data, cats):
 	train_data = train_data.drop(['item_description'], axis=1)
 	test_data = test_data.drop(['item_description'], axis=1)
 
-	train_Y = train_data['price']
-	train_X = train_data.drop(['price'], axis=1)
+	train_horizontal_splitted, test_horizontal_splitted = horizontal_split(train_data, test_data)
+	train_X_splitted, train_y_splitted, test_X_splitted, test_y_splitted  = [], [], [], []
+	for train, test in zip(train_horizontal_splitted, test_horizontal_splitted):
+		train_y_splitted.append(train['price'])
+		train_X_splitted.append(train.drop(['price'], axis=1))
+		test_y_splitted.append(test['price'])
+		test_X_splitted.append(test.drop(['price'], axis=1))
 
-	test_Y = test_data['price']
-	test_X = test_data.drop(['price'], axis=1)
-	return train_X.as_matrix(), test_X.as_matrix(), train_Y.as_matrix(), test_Y.as_matrix()
-			
+	train_Y = train_data['price'].as_matrix()
+	train_X = train_data.drop(['price'], axis=1).as_matrix()
 
+	test_Y = test_data['price'].as_matrix()
+	test_X = test_data.drop(['price'], axis=1).as_matrix()
 
-
+	return train_X, test_X, train_Y, test_Y
+#	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted

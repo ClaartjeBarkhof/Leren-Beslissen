@@ -16,6 +16,8 @@ import pandas as pd
 #		- col 2 to be the actual price
 def calc_error(dataframe):
 	pred_price = dataframe['p']
+	pred_price = pred_price.where(pred_price > 0, 0)
+	# print(pred_price)
 	actual_price = dataframe['a']
 	bias = np.mean(pred_price)-np.mean(actual_price)
 	n = len(pred_price)

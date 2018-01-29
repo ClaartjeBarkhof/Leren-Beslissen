@@ -1,5 +1,6 @@
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+#warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 import pandas as pd
 #import matplotlib.pyplot as plt
 import numpy as np
@@ -18,8 +19,10 @@ import analyse
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 import preprocessing
+
 import random
 
+<<<<<<< HEAD
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn.feature_selection import RFE
@@ -48,6 +51,27 @@ def validation_split(data, cats):
 		counter += 1
 	return error_list , bias_list
 
+	# max_rounds = 5
+	# kf = KFold(n_splits=3, shuffle = True, random_state=4)
+	# kf.get_n_splits(data)
+	# error_list = []
+	# bias_list = []
+	# counter = 0
+	# for train_index, test_index in kf.split(data):
+	# 	train_data, test_data = data.iloc[train_index], data.iloc[test_index]
+	# 	train_data = train_data.reset_index(drop = True)
+	# 	test_data = test_data.reset_index(drop = True)
+	# 	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	# 	prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
+	# 	(error, bias) = analyse.calc_error(prediction)
+	# 	error_list.append(error)
+	# 	bias_list.append(bias)
+	# 	if counter == max_rounds:
+	# 		break
+	# 	counter += 1
+	# 	print(counter)
+	# return error_list , bias_list
+
 # Expects a dataframe of one column:
 # the predicted price
 def write_submission(price_df, csv_name):
@@ -56,7 +80,7 @@ def write_submission(price_df, csv_name):
 	submission_df = submission_df.rename(columns = {'p':'price'})
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
-def main(cats, clean_data=False, feature_selection=False):
+def main(cats, clean_data=False):
 	if clean_data:
 		clean_data = clean.clean_main()
 	else:
@@ -76,7 +100,6 @@ def main(cats, clean_data=False, feature_selection=False):
 	#print("Error: ")
 	#print(error)
 	return error, bias
-
 
 all_cats = [[], ['name'], ['item_condition_id'], ['name', 'item_condition_id'], ['category_name'], ['name', 'category_name'], ['item_condition_id', 'category_name'], ['name', 'item_condition_id', 'category_name'], ['brand_name'], ['name', 'brand_name'], ['item_condition_id', 'brand_name'], ['name', 'item_condition_id', 'brand_name'], ['category_name', 'brand_name'], ['name', 'category_name', 'brand_name'], ['item_condition_id', 'category_name', 'brand_name'], ['name', 'item_condition_id', 'category_name', 'brand_name'], ['item_description'], ['name', 'item_description'], ['item_condition_id', 'item_description'], ['name', 'item_condition_id', 'item_description'], ['category_name', 'item_description'], ['name', 'category_name', 'item_description'], ['item_condition_id', 'category_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'item_description'], ['brand_name', 'item_description'], ['name', 'brand_name', 'item_description'], ['item_condition_id', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'brand_name', 'item_description'], ['category_name', 'brand_name', 'item_description'], ['name', 'category_name', 'brand_name', 'item_description'], ['item_condition_id', 'category_name', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'item_description'], ['shipping'], ['name', 'shipping'], ['item_condition_id', 'shipping'], ['name', 'item_condition_id', 'shipping'], ['category_name', 'shipping'], ['name', 'category_name', 'shipping'], ['item_condition_id', 'category_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'shipping'], ['brand_name', 'shipping'], ['name', 'brand_name', 'shipping'], ['item_condition_id', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'shipping'], ['category_name', 'brand_name', 'shipping'], ['name', 'category_name', 'brand_name', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'shipping'], ['item_description', 'shipping'], ['name', 'item_description', 'shipping'], ['item_condition_id', 'item_description', 'shipping'], ['name', 'item_condition_id', 'item_description', 'shipping'], ['category_name', 'item_description', 'shipping'], ['name', 'category_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'category_name', 'item_description', 'shipping'], ['brand_name', 'item_description', 'shipping'], ['name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'brand_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'item_description', 'shipping'], ['category_name', 'brand_name', 'item_description', 'shipping'], ['name', 'category_name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'item_description', 'shipping']]
 
