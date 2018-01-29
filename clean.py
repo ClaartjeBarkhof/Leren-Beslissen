@@ -34,7 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 300000
+INSTANCES = 100000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
@@ -94,8 +94,8 @@ def clean_main():
 	data = add_description_len(data)
 	data = split_categories(data)
 
-	print("ClEANING TIME:")
-	print("---- %s seconds ----" %(time.time()-t_start))
+	print("Clean")
+	#print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
 	#fileName = '../clean_matrix.pickle'
 	#fileObject = open(fileName,'wb')

@@ -113,6 +113,12 @@ def tuple_to_string(brand):
 	return result[1:]
 
 def record_most_common_brandnames_per_cat(train_data, test_data):
+	try:
+		train_data['category_name']
+		train_data['brand_name']
+	except KeyError:
+		return ['']
+
 	data = pd.concat([train_data, test_data])
 	data = data.reset_index(drop=True)
 	mc_brandnames_per_cat = {}
@@ -156,6 +162,11 @@ def replace_undefined_brand(item_name, brand_name, unique_brands):
 		return brand_name
 
 def find_brands(train_data, test_data):
+	try:
+		train_data['brand_name']
+	except KeyError:
+		return ['']
+
 	data = pd.concat([train_data, test_data])
 	data = data.reset_index(drop=True)
 	all_brands = data['brand_name']
@@ -173,6 +184,7 @@ def find_brands(train_data, test_data):
 def fill_in_brand(data, unique_brands):
 	try:
 		data['brand_name']
+		data['name']
 	except KeyError:
 		return data
 
@@ -216,10 +228,13 @@ def cluster_train(data):
 	print(set(labels))
 
 # input cleaned dataframes, outputs 2 matrices
-def preprocessing_main(train_data, test_data):
+def preprocessing_main(train_data, test_data, cats):
 	#train_data, test_data = split(clean_data, 0.7)
 	train_data = train_data.drop(['train_id'], axis=1)
 	test_data = test_data.drop(['train_id'], axis=1)
+
+	train_data = train_data.drop(cats, axis=1)
+	test_data = test_data.drop(cats, axis=1)
 
 	mc_brandnames_per_cat = record_most_common_brandnames_per_cat(train_data, test_data)
 	unique_brands = find_brands(train_data, test_data)
@@ -242,7 +257,6 @@ def preprocessing_main(train_data, test_data):
 	train_data = bin_cleaning_data(train_data, True)
 	#train_data = TFidf(train_data, True)
 	#train_data = get_sentiment(train_data)
-
 	# TEST
 	# Missing brand_names
 	test_data = fill_in_brand(test_data, unique_brands)
@@ -261,7 +275,6 @@ def preprocessing_main(train_data, test_data):
 
 	test_Y = test_data['price']
 	test_X = test_data.drop(['price'], axis=1)
-
 	return train_X.as_matrix(), test_X.as_matrix(), train_Y.as_matrix(), test_Y.as_matrix()
 			
 
