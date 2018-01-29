@@ -35,6 +35,7 @@ def validation_split(data, cats):
 	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
+<<<<<<< HEAD
 	counter = 0
 	for train_index, test_index in kf.split(data):
 		train_data, test_data = data.iloc[train_index], data.iloc[test_index]
@@ -43,6 +44,19 @@ def validation_split(data, cats):
 		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data, cats)
 		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
 		prediction.loc[prediction['p'] < 0, 'p'] = 0
+=======
+	X = data.drop(["price"],axis = 1)
+	y = data["price"]
+
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+	train_data = pd.concat([X_train,y_train],axis = 1).reset_index(drop = True)
+	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
+	rPerc = 0.2
+	lPerc = 0.8
+	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	for x in range(1):
+		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
+>>>>>>> 829b3f83c80b262d310dcdfd265c502ee81cb06a
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)
@@ -111,4 +125,8 @@ for cats in all_cats:
 	result = '"'+str(cats)+'"'+","+'"'+str(error)+'"'+","+'"'+str(bias) +'"'+ "\n"
 	results.write(result)
 
+<<<<<<< HEAD
 results.close()
+=======
+main(clean_data=True)
+>>>>>>> 829b3f83c80b262d310dcdfd265c502ee81cb06a
