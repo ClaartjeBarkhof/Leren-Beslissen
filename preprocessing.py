@@ -51,10 +51,10 @@ bin_encoding_cols_dict = {}
 tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 tv_name = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
 
-
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
-def TFidf(data, train):
+
+def TFidf_description(data, train):
 	try:
 		data['item_description']
 	except KeyError:
@@ -62,19 +62,31 @@ def TFidf(data, train):
 
 	if train == True:
 		tf_idf = tv.fit_transform(data['item_description']).toarray()
-		tf_idf_name = tv_name.fit_transform(data['name']).toarray()
 	else:
 		tf_idf = tv.transform(data['item_description']).toarray()
-		tf_idf_name = tv_name.transform(data['name']).toarray()
 
 	tf_idf = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf = pd.DataFrame(tf_idf)
-	tf_idf_name = analyse.PCA_dimred(tf_idf, 1)
-	tf_idf_name = pd.DataFrame(tf_idf)
 	data = pd.concat([data, tf_idf], axis = 1)
-	print(tf_idf_name[0:10])
-	data['name'] = tf_idf_name
 	return data
+
+def TFidf_name(data, train):
+	try:
+		data['name']
+	except KeyError:
+		return data
+
+	if train == True:
+		tf_idf_name = tv_name.fit_transform(data['name']).toarray()
+	else:
+		tf_idf_name = tv_name.transform(data['name']).toarray()
+
+	tf_idf_name = analyse.PCA_dimred(tf_idf_name, 1)
+	tf_idf_name = pd.DataFrame(tf_idf_name)
+	data = pd.concat([data, tf_idf_name], axis = 1)
+#	data['name'] = tf_idf_name
+	return data
+
 
 def binary_encoding(column, oh_encoder, train, category_1):
 
@@ -292,7 +304,9 @@ def preprocessing_main(train_data, test_data):
 	# test_data = test_data.drop(drop_categories, axis=1)
 
 	train_data = bin_cleaning_data(train_data, True)
-	train_data = TFidf(train_data, True)
+	train_data = TFidf_description(train_data, True)
+	train_data = TFidf_name(train_data, True)
+
 	#train_data = get_sentiment(train_data)
 
 
@@ -301,12 +315,15 @@ def preprocessing_main(train_data, test_data):
 	test_data = fill_in_brand(test_data, unique_brands)
 	test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
 	test_data = bin_cleaning_data(test_data, False)
-	test_data = TFidf(test_data, False)
+	test_data = TFidf_description(test_data, False)
+	test_data = TFidf_name(test_data, False)
+
+
 	#test_data = get_sentiment(test_data)
 
 	# item_description moet altijd gedropt worden 
-	train_data = train_data.drop(['item_description'], axis=1)
-	test_data = test_data.drop(['item_description'], axis=1)
+	train_data = train_data.drop(['item_description', 'name'], axis=1)
+	test_data = test_data.drop(['item_description', 'name'], axis=1)
 
 	train_horizontal_splitted, test_horizontal_splitted = horizontal_split(train_data, test_data)
 	train_X_splitted, train_y_splitted, test_X_splitted, test_y_splitted  = [], [], [], []
