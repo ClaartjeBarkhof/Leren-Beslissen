@@ -1,5 +1,5 @@
 import warnings
-#warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 import pandas as pd
 #import matplotlib.pyplot as plt
@@ -22,7 +22,6 @@ import preprocessing
 
 import random
 
-<<<<<<< HEAD
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn.feature_selection import RFE
@@ -30,21 +29,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Ridge
 
 def validation_split(data, cats):
-	max_rounds = 5
-	kf = KFold(n_splits=3, shuffle = True, random_state=4)
-	kf.get_n_splits(data)
 	error_list = []
 	bias_list = []
-<<<<<<< HEAD
-	counter = 0
-	for train_index, test_index in kf.split(data):
-		train_data, test_data = data.iloc[train_index], data.iloc[test_index]
-		train_data = train_data.reset_index(drop = True)
-		test_data = test_data.reset_index(drop = True)
-		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data, cats)
-		prediction = learning_algorithms.ridge(train_X, train_y, test_X, test_y)
-		prediction.loc[prediction['p'] < 0, 'p'] = 0
-=======
 	X = data.drop(["price"],axis = 1)
 	y = data["price"]
 
@@ -53,41 +39,14 @@ def validation_split(data, cats):
 	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
 	rPerc = 0.2
 	lPerc = 0.8
-	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data, cats)
 	for x in range(1):
 		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
->>>>>>> 829b3f83c80b262d310dcdfd265c502ee81cb06a
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)
-		if counter == max_rounds:
-			break
-		counter += 1
 	return error_list , bias_list
 
-	# max_rounds = 5
-	# kf = KFold(n_splits=3, shuffle = True, random_state=4)
-	# kf.get_n_splits(data)
-	# error_list = []
-	# bias_list = []
-	# counter = 0
-	# for train_index, test_index in kf.split(data):
-	# 	train_data, test_data = data.iloc[train_index], data.iloc[test_index]
-	# 	train_data = train_data.reset_index(drop = True)
-	# 	test_data = test_data.reset_index(drop = True)
-	# 	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
-	# 	prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
-	# 	(error, bias) = analyse.calc_error(prediction)
-	# 	error_list.append(error)
-	# 	bias_list.append(bias)
-	# 	if counter == max_rounds:
-	# 		break
-	# 	counter += 1
-	# 	print(counter)
-	# return error_list , bias_list
-
-# Expects a dataframe of one column:
-# the predicted price
 def write_submission(price_df, csv_name):
 	id_df = pd.DataFrame(np.arange(price_df.shape[0]), columns=['test_id'])
 	submission_df = pd.concat([id_df, price_df], axis=1)
@@ -104,9 +63,7 @@ def main(cats, clean_data=False):
 
 	#training_set, training_target, validation_set, validation_target = validation_split(clean_data, 0.8)
 	(error_list,bias_list) = validation_split(clean_data, cats)
-	#best_dim = analyse.analyse_main(training_set, training_target, validation_set, validation_target)
-	#prediction = learning_algorithms.lgbmRidge(train_X, train_Y, test_X, test_Y)
-	#(error, bias) = analyse.calc_error(prediction)
+
 	error = sum(error_list)/float(len(error_list))
 	bias = sum(bias_list)/float(len(bias_list))
 	#print("Bias: ")
@@ -125,8 +82,4 @@ for cats in all_cats:
 	result = '"'+str(cats)+'"'+","+'"'+str(error)+'"'+","+'"'+str(bias) +'"'+ "\n"
 	results.write(result)
 
-<<<<<<< HEAD
 results.close()
-=======
-main(clean_data=True)
->>>>>>> 829b3f83c80b262d310dcdfd265c502ee81cb06a

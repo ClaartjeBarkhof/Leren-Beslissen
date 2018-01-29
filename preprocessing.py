@@ -57,7 +57,7 @@ sentiment_analyzer = SentimentIntensityAnalyzer()
 def TFidf(data, train):
 	try:
 		data['item_description']
-		data['names']
+		data['name']
 	except KeyError:
 		return data
 
@@ -73,7 +73,6 @@ def TFidf(data, train):
 	tf_idf_name = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf_name = pd.DataFrame(tf_idf)
 	data = pd.concat([data, tf_idf], axis = 1)
-	print(tf_idf_name[0:10])
 	data['name'] = tf_idf_name
 	return data
 
@@ -335,6 +334,5 @@ def preprocessing_main(train_data, test_data, cats):
 
 	test_Y = test_data['price'].as_matrix()
 	test_X = test_data.drop(['price'], axis=1).as_matrix()
-
 	return train_X, test_X, train_Y, test_Y
 #	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted
