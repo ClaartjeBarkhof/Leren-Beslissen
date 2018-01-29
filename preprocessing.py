@@ -62,18 +62,18 @@ def TFidf(data, train):
 
 	if train == True:
 		tf_idf = tv.fit_transform(data['item_description']).toarray()
-		tf_idf_name = tv_name.fit_transform(data['item_name']).toarray()
+		tf_idf_name = tv_name.fit_transform(data['name']).toarray()
 	else:
 		tf_idf = tv.transform(data['item_description']).toarray()
-		tf_idf_name = tv_name.transform(data['item_name']).toarray()
+		tf_idf_name = tv_name.transform(data['name']).toarray()
 
 	tf_idf = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf = pd.DataFrame(tf_idf)
 	tf_idf_name = analyse.PCA_dimred(tf_idf, 1)
 	tf_idf_name = pd.DataFrame(tf_idf)
-
 	data = pd.concat([data, tf_idf], axis = 1)
-	data['item_name'] = tf_idf_name
+	print(tf_idf_name[0:10])
+	data['name'] = tf_idf_name
 	return data
 
 def binary_encoding(column, oh_encoder, train, category_1):
@@ -98,7 +98,7 @@ def binary_encoding(column, oh_encoder, train, category_1):
 	return column_bin
 
 def bin_cleaning_data(data, train):
-	standard_categories = ['item_condition_id', 'shipping', 'item_description', 'price']
+	standard_categories = ['name', 'item_condition_id', 'shipping', 'item_description', 'price']
 	new_data = pd.DataFrame()
 	for cat in standard_categories:
 		if cat in data.columns:
@@ -279,7 +279,7 @@ def preprocessing_main(train_data, test_data):
 	# TRAIN
 	# Missing brand_names
 	train_data = fill_in_brand(train_data, unique_brands)
-	#train_data = fill_in_missing_most_common_brandnames_per_cat(train_data, mc_brandnames_per_cat)
+	train_data = fill_in_missing_most_common_brandnames_per_cat(train_data, mc_brandnames_per_cat)
 	#train_data = drop_missing_brandnames(train_data)
 
 	# Price = 0 droppen
@@ -292,16 +292,16 @@ def preprocessing_main(train_data, test_data):
 	# test_data = test_data.drop(drop_categories, axis=1)
 
 	train_data = bin_cleaning_data(train_data, True)
-	#train_data = TFidf(train_data, True)
+	train_data = TFidf(train_data, True)
 	#train_data = get_sentiment(train_data)
+
 
 	# TEST
 	# Missing brand_names
 	test_data = fill_in_brand(test_data, unique_brands)
-	#test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
-	
+	test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
 	test_data = bin_cleaning_data(test_data, False)
-	#test_data = TFidf(test_data, False)
+	test_data = TFidf(test_data, False)
 	#test_data = get_sentiment(test_data)
 
 	# item_description moet altijd gedropt worden 

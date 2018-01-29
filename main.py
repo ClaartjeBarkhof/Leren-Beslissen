@@ -35,8 +35,8 @@ def validation_split(data):
 	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 	train_data = pd.concat([X_train,y_train],axis = 1).reset_index(drop = True)
 	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
-	rPerc = 0.4
-	lPerc = 0.6
+	rPerc = 0.2
+	lPerc = 0.8
 	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
 	for x in range(1):
 		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
