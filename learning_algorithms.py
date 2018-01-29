@@ -47,8 +47,6 @@ params1 = {
         'nthread': 4,
         'min_data': 1,
         'min_data_in_bin': 1
-
-
     }
 
 params2 = {
@@ -112,7 +110,4 @@ def splitted_learning(train_X, test_X, train_y, test_y, train_X_split, train_y_s
 	prediction['p'] = prediction['p'].apply(lambda x: x*ratio)
 	p = p.apply(lambda x: x*(1-ratio))
 	prediction['p'] = prediction['p'].add(p)
-
-
-#
 	return(prediction)

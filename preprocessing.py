@@ -1,3 +1,5 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
 import nltk
@@ -7,6 +9,7 @@ import operator
 import numpy as np
 import time
 import category_encoders as ce
+import copy
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -29,7 +32,8 @@ from sklearn.utils import shuffle
 
 import analyse
 
-MAX_FEATURES_ITEM_DESCRIPTION = 100
+
+MAX_FEATURES_ITEM_DESCRIPTION = 300000
 MAX_FEATURES_ITEM_NAME = 100
 
 
@@ -51,6 +55,11 @@ tv_name = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_rang
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
 def TFidf(data, train):
+	try:
+		data['item_description']
+	except KeyError:
+		return data
+
 	if train == True:
 		tf_idf = tv.fit_transform(data['item_description']).toarray()
 		tf_idf_name = tv_name.fit_transform(data['item_name']).toarray()
@@ -89,8 +98,13 @@ def binary_encoding(column, oh_encoder, train, category_1):
 	return column_bin
 
 def bin_cleaning_data(data, train):
-	new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description'], data['price']], axis=1)
+	standard_categories = ['item_condition_id', 'shipping', 'item_description', 'price']
+	new_data = pd.DataFrame()
+	for cat in standard_categories:
+		if cat in data.columns:
+			new_data = pd.concat([new_data, data[cat]], axis=1)
 	category_1 = False
+	#new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description'], data['price']], axis=1)
 	for i in range(5):
 		if i == 0:
 			category_1 =True
@@ -98,17 +112,25 @@ def bin_cleaning_data(data, train):
 			category_1 = False
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train, category_1)], axis=1)
-	new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train, False)], axis=1)
 
+	try:
+		new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train, False)], axis=1)
+	except KeyError:
+		return new_data
+	
 	return new_data
 
 def drop_missing_brandnames(data):
+	try:
+		data['brand_name']
+	except KeyError:
+		return data
+
 	rows_before_dropping = data.shape[0]
 	data = data[(data.brand_name != 'undefined')]
 	rows_after_dropping = data.shape[0]
 	dropped_rows = rows_before_dropping - rows_after_dropping
-	print("Dropped", dropped_rows, "rows of", rows_before_dropping, "rows in total")
-	data = data.reset_index()
+	data = data.reset_index(drop=True)
 	return data
 
 def tuple_to_string(brand):
@@ -116,6 +138,31 @@ def tuple_to_string(brand):
 	for elm in brand:
 		result += " " + elm
 	return result[1:]
+
+def record_most_common_brandnames_per_cat(train_data, test_data):
+	data = pd.concat([train_data, test_data])
+	data = data.reset_index(drop=True)
+	mc_brandnames_per_cat = {}
+	unique_cats = list(set(data['category_name']))
+	for cat in unique_cats:
+		x = data['brand_name'].loc[(data['category_name'] == cat)]
+		counts = x.value_counts().index.tolist()
+		if (len(counts) > 1) and (counts[0] == 'undefined'):
+			mc_brandnames_per_cat[cat] = counts[1]
+		else:
+			mc_brandnames_per_cat[cat] = counts[0]
+	return mc_brandnames_per_cat
+
+def fill_in_missing_most_common_brandnames_per_cat(data, mc_brandnames_per_cat):
+	try:
+		data['category_name']
+		data['brand_name']
+	except KeyError:
+		return data 
+	for index, row in data.iterrows():
+			if data.loc[index].brand_name == 'undefined':
+				data.at[index, 'brand_name'] = mc_brandnames_per_cat[row['category_name']]
+	return data
 
 def replace_undefined_brand(item_name, brand_name, unique_brands):
 	if brand_name == 'undefined':
@@ -135,7 +182,10 @@ def replace_undefined_brand(item_name, brand_name, unique_brands):
 	else:
 		return brand_name
 
-def find_brands_train(all_brands):
+def find_brands(train_data, test_data):
+	data = pd.concat([train_data, test_data])
+	data = data.reset_index(drop=True)
+	all_brands = data['brand_name']
 	unique_brands_raw = list(set(all_brands) - {'undefined'})
 	unique_brands = []
 	for elm in unique_brands_raw:
@@ -146,19 +196,44 @@ def find_brands_train(all_brands):
 			unique_brands.append(elm)
 	return unique_brands
 
-def fill_in_brand_train(data):
-	unique_brands = find_brands_train(data['brand_name'])
+
+def fill_in_brand(data, unique_brands):
+	try:
+		data['brand_name']
+	except KeyError:
+		return data
+
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+
+	try:
+		data['item_description']
+	except KeyError:
+		return data
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['item_description'], row['brand_name'], unique_brands), axis=1)
-	return data, unique_brands
+
+	return data
 
 def fill_in_brand_test(data, unique_brands):
+	try:
+		data['brand_name']
+		data['name']
+	except KeyError:
+		return data
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['name'], row['brand_name'], unique_brands), axis=1)
+
+	try:
+		data['item_description']
+	except KeyError:
+		return data
 	data['brand_name'] = data.apply(lambda row: replace_undefined_brand(row['item_description'], row['brand_name'], unique_brands), axis=1)
 	return data
 
 def get_sentiment(data):
-	data['item_description'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
+	try:
+		data['item_description']
+	except KeyError:
+		return data
+	data['sentiment'] = data.apply(lambda row: sentiment_analyzer.polarity_scores(row['item_description'])['compound'], axis=1)
 	return data
 
 def cluster_train(data):
@@ -198,22 +273,38 @@ def preprocessing_main(train_data, test_data):
 	train_data = train_data.drop(['train_id'], axis=1)
 	test_data = test_data.drop(['train_id'], axis=1)
 
-	# functies op train fitten
-	train_data, unique_brands = fill_in_brand_train(train_data)
+	mc_brandnames_per_cat = record_most_common_brandnames_per_cat(train_data, test_data)
+	unique_brands = find_brands(train_data, test_data)
+	
+	# TRAIN
+	# Missing brand_names
+	train_data = fill_in_brand(train_data, unique_brands)
+	#train_data = fill_in_missing_most_common_brandnames_per_cat(train_data, mc_brandnames_per_cat)
+	#train_data = drop_missing_brandnames(train_data)
+
+	# Price = 0 droppen
 	train_data = train_data[(train_data.price > 0)]
 	train_data = train_data.reset_index(drop=True)
-	train_data = drop_missing_brandnames(train_data)
 
-#	train_data = TFidf(train_data, True)
+	# Vul de categorieën die je niet mee wil nemen in. 
+	# drop_categories = ['train_id', 'item_description', 'brand_name']
+	# train_data = train_data.drop(drop_categories, axis=1)
+	# test_data = test_data.drop(drop_categories, axis=1)
+
 	train_data = bin_cleaning_data(train_data, True)
+	#train_data = TFidf(train_data, True)
 	#train_data = get_sentiment(train_data)
 
-	# functies op test toepassen
-	test_data = fill_in_brand_test(test_data, unique_brands)
-#	test_data = TFidf(test_data, False)
+	# TEST
+	# Missing brand_names
+	test_data = fill_in_brand(test_data, unique_brands)
+	#test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
+	
 	test_data = bin_cleaning_data(test_data, False)
+	#test_data = TFidf(test_data, False)
 	#test_data = get_sentiment(test_data)
 
+	# item_description moet altijd gedropt worden 
 	train_data = train_data.drop(['item_description'], axis=1)
 	test_data = test_data.drop(['item_description'], axis=1)
 
@@ -231,4 +322,5 @@ def preprocessing_main(train_data, test_data):
 	test_Y = test_data['price'].as_matrix()
 	test_X = test_data.drop(['price'], axis=1).as_matrix()
 
-	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted
+	return train_X, test_X, train_Y, test_Y
+#	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted
