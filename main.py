@@ -1,5 +1,6 @@
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+#warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 import pandas as pd
 #import matplotlib.pyplot as plt
 import numpy as np
@@ -21,29 +22,56 @@ import preprocessing
 
 import random
 
-def validation_split(data):
-	max_rounds = 5
-	kf = KFold(n_splits=3, shuffle = True, random_state=4)
-	kf.get_n_splits(data)
-	error_list = []
-	bias_list = []
-	counter = 0
-	for train_index, test_index in kf.split(data):
-		train_data, test_data = data.iloc[train_index], data.iloc[test_index]
-		train_data = train_data.reset_index(drop = True)
-		test_data = test_data.reset_index(drop = True)
 #		train_X, test_X, train_y, test_y, train_split_X, test_split_X, train_split_y, test_split_y = preprocessing.preprocessing_main(train_data, test_data)	
 #		prediction = learning_algorithms.splitted_learning(train_X, test_X, train_y, test_y, train_split_X, train_split_y, test_split_X, test_split_y)
-		train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
-		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y)
+
+
+def validation_split(data):
+	error_list = []
+	bias_list = []
+	X = data.drop(["price"],axis = 1)
+	y = data["price"]
+
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+	train_data = pd.concat([X_train,y_train],axis = 1).reset_index(drop = True)
+	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
+	rPerc = 0.4
+	lPerc = 0.6
+	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	for x in range(1):
+		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)
-		if counter == max_rounds:
-			break
-		counter += 1
-		print(counter)
+		rPerc = rPerc - 0.04
+		lPerc = lPerc + 0.04
+#	lins = np.linspace(0.6,1.0,num =10)
+	lins = np.linspace(0.6,1.0,num =1)
+
+	plt.scatter(lins,error_list)
+	plt.show()
 	return error_list , bias_list
+
+	# max_rounds = 5
+	# kf = KFold(n_splits=3, shuffle = True, random_state=4)
+	# kf.get_n_splits(data)
+	# error_list = []
+	# bias_list = []
+	# counter = 0
+	# for train_index, test_index in kf.split(data):
+	# 	train_data, test_data = data.iloc[train_index], data.iloc[test_index]
+	# 	train_data = train_data.reset_index(drop = True)
+	# 	test_data = test_data.reset_index(drop = True)
+	# 	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	# 	prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
+	# 	(error, bias) = analyse.calc_error(prediction)
+	# 	error_list.append(error)
+	# 	bias_list.append(bias)
+	# 	if counter == max_rounds:
+	# 		break
+	# 	counter += 1
+	# 	print(counter)
+	# return error_list , bias_list
 
 # Expects a dataframe of one column:
 # the predicted price
