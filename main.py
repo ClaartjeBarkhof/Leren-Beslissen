@@ -37,16 +37,18 @@ def validation_split(data):
 	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
 	rPerc = 0.2
 	lPerc = 0.8
-	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
-	for x in range(1):
-		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
+	train_X, test_X, train_y, test_y, train_split_X, test_split_X, train_split_y, test_split_y = preprocessing.preprocessing_main(train_data, test_data)	
+#	train_X, test_X, train_y, test_y = preprocessing.preprocessing_main(train_data, test_data)
+	for x in range(3):
+		prediction = learning_algorithms.splitted_learning(rPerc, lPerc, train_X, test_X, train_y, test_y, train_split_X, train_split_y, test_split_X, test_split_y)
+#		prediction = learning_algorithms.lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
 		(error, bias) = analyse.calc_error(prediction)
 		error_list.append(error)
 		bias_list.append(bias)
 		rPerc = rPerc - 0.04
 		lPerc = lPerc + 0.04
 #	lins = np.linspace(0.6,1.0,num =10)
-	lins = np.linspace(0.6,1.0,num =1)
+	lins = np.linspace(0.6,1.0,num =3)
 
 	plt.scatter(lins,error_list)
 	plt.show()
