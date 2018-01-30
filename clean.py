@@ -32,16 +32,25 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 10000
+INSTANCES = 150000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath, nrows=INSTANCES)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
-	data['category_name'] = data['category_name'].fillna('undefined').astype(str)
-	data['brand_name'] = data['brand_name'].fillna('undefined').astype(str)
-	data['item_description'] = data['item_description'].fillna('undefined')
+	try:
+		data['category_name'] = data['category_name'].fillna('undefined').astype(str)
+	except KeyError:
+		pass
+	try:
+		data['brand_name'] = data['brand_name'].fillna('undefined').astype(str)
+	except KeyError:
+		pass
+	try:
+		data['item_description'] = data['item_description'].fillna('undefined')
+	except KeyError:
+		pass
 	return data
 
 '''
@@ -113,15 +122,22 @@ def scale(data):
 	return(data)
 
 
-def clean_main():
+def clean_main(cats):
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
+	data = data.drop(cats, axis=1)
 	t_start = time.time()
 	data = replace_NAN(data)
-	data = add_description_len(data)
-	data = split_categories(data)
+	try:
+		data = add_description_len(data)
+	except KeyError:
+		pass
+	try:
+		data = split_categories(data)
+	except KeyError:
+		pass
 
-	print("Clean")
+	print("Clean!")
 	#print("---- %s seconds ----" %(time.time()-t_start))
 	# Save cleaned data matrix in file
 	#fileName = '../clean_matrix.pickle'

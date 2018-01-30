@@ -21,7 +21,7 @@ from sklearn.utils import shuffle
 import preprocessing
 
 import random
-
+import ctypes  # An included library with Python install.   
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn.feature_selection import RFE
@@ -34,7 +34,7 @@ def validation_split(data, cats):
 	X = data.drop(["price"],axis = 1)
 	y = data["price"]
 
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=10)
 	train_data = pd.concat([X_train,y_train],axis = 1).reset_index(drop = True)
 	test_data = pd.concat([X_test,y_test], axis = 1).reset_index(drop = True)
 	rPerc = 0.2
@@ -55,7 +55,7 @@ def write_submission(price_df, csv_name):
 
 def main(cats, clean_data=False):
 	if clean_data:
-		clean_data = clean.clean_main()
+		clean_data = clean.clean_main(cats)
 	else:
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
@@ -72,14 +72,16 @@ def main(cats, clean_data=False):
 	#print(error)
 	return error, bias
 
-all_cats = [[], ['name'], ['item_condition_id'], ['name', 'item_condition_id'], ['category_name'], ['name', 'category_name'], ['item_condition_id', 'category_name'], ['name', 'item_condition_id', 'category_name'], ['brand_name'], ['name', 'brand_name'], ['item_condition_id', 'brand_name'], ['name', 'item_condition_id', 'brand_name'], ['category_name', 'brand_name'], ['name', 'category_name', 'brand_name'], ['item_condition_id', 'category_name', 'brand_name'], ['name', 'item_condition_id', 'category_name', 'brand_name'], ['item_description'], ['name', 'item_description'], ['item_condition_id', 'item_description'], ['name', 'item_condition_id', 'item_description'], ['category_name', 'item_description'], ['name', 'category_name', 'item_description'], ['item_condition_id', 'category_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'item_description'], ['brand_name', 'item_description'], ['name', 'brand_name', 'item_description'], ['item_condition_id', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'brand_name', 'item_description'], ['category_name', 'brand_name', 'item_description'], ['name', 'category_name', 'brand_name', 'item_description'], ['item_condition_id', 'category_name', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'item_description'], ['shipping'], ['name', 'shipping'], ['item_condition_id', 'shipping'], ['name', 'item_condition_id', 'shipping'], ['category_name', 'shipping'], ['name', 'category_name', 'shipping'], ['item_condition_id', 'category_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'shipping'], ['brand_name', 'shipping'], ['name', 'brand_name', 'shipping'], ['item_condition_id', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'shipping'], ['category_name', 'brand_name', 'shipping'], ['name', 'category_name', 'brand_name', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'shipping'], ['item_description', 'shipping'], ['name', 'item_description', 'shipping'], ['item_condition_id', 'item_description', 'shipping'], ['name', 'item_condition_id', 'item_description', 'shipping'], ['category_name', 'item_description', 'shipping'], ['name', 'category_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'category_name', 'item_description', 'shipping'], ['brand_name', 'item_description', 'shipping'], ['name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'brand_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'item_description', 'shipping'], ['category_name', 'brand_name', 'item_description', 'shipping'], ['name', 'category_name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'item_description', 'shipping']]
+all_cats = [[], ['name'], ['item_condition_id'], ['name', 'item_condition_id'], ['category_name'], ['name', 'category_name'], ['item_condition_id', 'category_name'], ['name', 'item_condition_id', 'category_name'], ['brand_name'], ['name', 'brand_name'], ['item_condition_id', 'brand_name'], ['name', 'item_condition_id', 'brand_name'], ['category_name', 'brand_name'], ['name', 'category_name', 'brand_name'], ['item_condition_id', 'category_name', 'brand_name'], ['name', 'item_condition_id', 'category_name', 'brand_name'], ['item_description'], ['name', 'item_description'], ['item_condition_id', 'item_description'], ['name', 'item_condition_id', 'item_description'], ['category_name', 'item_description'], ['name', 'category_name', 'item_description'], ['item_condition_id', 'category_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'item_description'], ['brand_name', 'item_description'], ['name', 'brand_name', 'item_description'], ['item_condition_id', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'brand_name', 'item_description'], ['category_name', 'brand_name', 'item_description'], ['name', 'category_name', 'brand_name', 'item_description'], ['item_condition_id', 'category_name', 'brand_name', 'item_description'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'item_description'], ['shipping'], ['name', 'shipping'], ['item_condition_id', 'shipping'], ['name', 'item_condition_id', 'shipping'], ['category_name', 'shipping'], ['name', 'category_name', 'shipping'], ['item_condition_id', 'category_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'shipping'], ['brand_name', 'shipping'], ['name', 'brand_name', 'shipping'], ['item_condition_id', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'shipping'], ['category_name', 'brand_name', 'shipping'], ['name', 'category_name', 'brand_name', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'shipping'], ['name', 'item_condition_id', 'category_name', 'brand_name', 'shipping'], ['item_description', 'shipping'], ['name', 'item_description', 'shipping'], ['item_condition_id', 'item_description', 'shipping'], ['name', 'item_condition_id', 'item_description', 'shipping'], ['category_name', 'item_description', 'shipping'], ['name', 'category_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'category_name', 'item_description', 'shipping'], ['brand_name', 'item_description', 'shipping'], ['name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'brand_name', 'item_description', 'shipping'], ['name', 'item_condition_id', 'brand_name', 'item_description', 'shipping'], ['category_name', 'brand_name', 'item_description', 'shipping'], ['name', 'category_name', 'brand_name', 'item_description', 'shipping'], ['item_condition_id', 'category_name', 'brand_name', 'item_description', 'shipping']]
+five_best = [[], ['name', 'item_description', 'shipping'], ['name']]
+results = open("five_best.txt","w") 
 
-results = open("results.txt","w") 
-
-for cats in all_cats:
+for cats in five_best:
 	print(cats)
-	error, bias = main(cats, clean_data=True)
+	error, bias = main(list(cats), clean_data=True)
 	result = '"'+str(cats)+'"'+","+'"'+str(error)+'"'+","+'"'+str(bias) +'"'+ "\n"
 	results.write(result)
+
+ctypes.windll.user32.MessageBoxW(0, "DONE!", "results", 1)
 
 results.close()
