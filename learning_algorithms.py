@@ -98,16 +98,16 @@ def lgbmRidge(training_set, training_target, validation_set, validation_target,r
 
 
 
-def splitted_learning(train_X, test_X, train_y, test_y, train_X_split, train_y_split, test_X_split, test_y_split, ratio):
-	prediction = lgbmRidge(train_X, train_y, test_X, test_y)
+def splitted_learning(rPerc, lPerc, train_X, test_X, train_y, test_y, train_X_split, train_y_split, test_X_split, test_y_split):
+	prediction = lgbmRidge(train_X, train_y, test_X, test_y, rPerc, lPerc)
 	p = pd.Series()
 	for trainx, trainy, testx, testy in zip(train_X_split, train_y_split, test_X_split, test_y_split):
-		split_prediction = lgbmRidge(trainx, trainy, testx, testy)
+		split_prediction = lgbmRidge(trainx, trainy, testx, testy, rPerc, lPerc)
 		p = pd.concat([p, split_prediction['p']], axis=0)
 
 	p = p.sort_index(axis = 0)
 
-	prediction['p'] = prediction['p'].apply(lambda x: x*ratio)
-	p = p.apply(lambda x: x*(1-ratio))
+	prediction['p'] = prediction['p'].apply(lambda x: x*0.7)
+	p = p.apply(lambda x: x*(0.3))
 	prediction['p'] = prediction['p'].add(p)
 	return(prediction)

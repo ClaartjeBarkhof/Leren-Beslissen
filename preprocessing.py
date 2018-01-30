@@ -33,8 +33,8 @@ from sklearn.utils import shuffle
 import analyse
 
 
-MAX_FEATURES_ITEM_DESCRIPTION = 300000
-MAX_FEATURES_ITEM_NAME = 100
+MAX_FEATURES_ITEM_DESCRIPTION = 20000
+MAX_FEATURES_ITEM_NAME = 20000
 
 
 
@@ -49,7 +49,7 @@ oh_encoder_list = [ce.OneHotEncoder(handle_unknown="ignore") for i in range(6)]
 bin_encoding_cols_dict = {}
 
 tv = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
-tv_name = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_DESCRIPTION, ngram_range=(1, 2), stop_words='english')
+tv_name = TfidfVectorizer(max_features=MAX_FEATURES_ITEM_NAME, ngram_range=(1, 2), stop_words='english')
 
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
@@ -304,7 +304,7 @@ def preprocessing_main(train_data, test_data):
 	# test_data = test_data.drop(drop_categories, axis=1)
 
 	train_data = bin_cleaning_data(train_data, True)
-	train_data = TFidf_description(train_data, True)
+#	train_data = TFidf_description(train_data, True)
 	train_data = TFidf_name(train_data, True)
 
 	#train_data = get_sentiment(train_data)
@@ -315,7 +315,7 @@ def preprocessing_main(train_data, test_data):
 	test_data = fill_in_brand(test_data, unique_brands)
 	test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
 	test_data = bin_cleaning_data(test_data, False)
-	test_data = TFidf_description(test_data, False)
+#	test_data = TFidf_description(test_data, False)
 	test_data = TFidf_name(test_data, False)
 
 
@@ -339,5 +339,5 @@ def preprocessing_main(train_data, test_data):
 	test_Y = test_data['price'].as_matrix()
 	test_X = test_data.drop(['price'], axis=1).as_matrix()
 
-	return train_X, test_X, train_Y, test_Y
-#	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted
+#	return train_X, test_X, train_Y, test_Y
+	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted

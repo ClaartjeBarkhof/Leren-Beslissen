@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 1000
+INSTANCES = 100000
 
 
 def open_tsv(filepath):
