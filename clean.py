@@ -12,6 +12,9 @@ import numpy as np
 # nltk.download('stopwords')
 import time
 import category_encoders as ce
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -30,12 +33,12 @@ from sklearn import metrics
 #from sklearn.datasets.samples_generator import make_blobs
 from sklearn.preprocessing import StandardScaler
 
-import analyse
+#import analyse
 
 INSTANCES = 150000
 
 def open_tsv(filepath):
-	data = pd.read_table(filepath, nrows=INSTANCES)
+	data = pd.read_table(filepath)
 	return data #.iloc[0:10,:]
 
 def replace_NAN(data):
@@ -52,35 +55,6 @@ def replace_NAN(data):
 	except KeyError:
 		pass
 	return data
-
-'''
-def record_most_common_brandnames(data):
-	mc_brandnames_per_cat = {}
-	unique_cats = list(set(data['category_name']))
-	for cat in unique_cats:
-		x = data['brand_name'].loc[(data['category_name'] == cat)]
-		counts = x.value_counts().index.tolist()
-		if (len(counts) > 1) and (counts[0] == 'undefined'):
-			mc_brandnames_per_cat[cat] = counts[1]
-		else:
-			mc_brandnames_per_cat[cat] = counts[0]
-	return mc_brandnames_per_cat
-
-def fill_in_missing_brandnames(data):
-	mc_brandnames_per_cat = record_most_common_brandnames(data)
-	count = 0
-	print(len(data['brand_name'].loc[(data.brand_name == 'undefined')]))
-	for index, row in data.iterrows():
-		if row['brand_name'] == 'undefined':
-			row['brand_name'] = mc_brandnames_per_cat[row['category_name']]
-			#print(row)
-			#print('--------')
-			#print(mc_brandnames_per_cat[row['category_name']])
-			if mc_brandnames_per_cat[row['category_name']] != 'undefined':
-				count += 1
-	print(len(data['brand_name'].loc[(data.brand_name == 'undefined')]))
-	#print(count)
-'''
 
 def split_categories(data):
 	column_split = lambda x: pd.Series([i for i in (x.split('/'))])
@@ -128,6 +102,7 @@ def clean_main(cats):
 	data = data.drop(cats, axis=1)
 	t_start = time.time()
 	data = replace_NAN(data)
+
 	try:
 		data = add_description_len(data)
 	except KeyError:
@@ -139,6 +114,20 @@ def clean_main(cats):
 
 	print("Clean!")
 	#print("---- %s seconds ----" %(time.time()-t_start))
+
+	#data = add_description_len(data)
+	#data = split_categories(data)
+
+	'''
+	print("Undefined brand_name", len(data[(data.brand_name == 'undefined')]))
+	missing_brandname_data_cat = data[(data.brand_name == 'undefined')].category_name
+	counts = missing_brandname_data_cat.value_counts()
+	length = counts.index.shape[0]
+	list2 = [i for i in range(length)]
+	sns.barplot(counts.values, list2)
+	plt.show()	
+	'''
+
 	# Save cleaned data matrix in file
 	#fileName = '../clean_matrix.pickle'
 	#fileObject = open(fileName,'wb')
@@ -147,6 +136,5 @@ def clean_main(cats):
 	#data = scale(data)
 	return data
 
-
-#clean_main()
+clean_main()
 	
