@@ -1,4 +1,5 @@
 import warnings
+import gc
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
@@ -30,12 +31,16 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 
+from scipy.sparse import csr_matrix, hstack
+
 import analyse
 
 
-MAX_FEATURES_ITEM_DESCRIPTION = 20000
-MAX_FEATURES_ITEM_NAME = 20000
-
+MAX_FEATURES_ITEM_DESCRIPTION = 10000
+MAX_FEATURES_ITEM_NAME = 10000
+NUM_BRANDS = 4000
+NUM_CATEGORIES = 1000
+NAME_MIN_DF = 10
 
 
 ps = PorterStemmer()
@@ -55,44 +60,30 @@ sentiment_analyzer = SentimentIntensityAnalyzer()
 
 
 def TFidf_description(data, train):
-	try:
-		data['item_description']
-	except KeyError:
-		return data
-
 	if train == True:
-		tf_idf = tv.fit_transform(data['item_description']).toarray()
+		tf_idf = tv.fit_transform(data).toarray()
 	else:
-		tf_idf = tv.transform(data['item_description']).toarray()
-
-	tf_idf = analyse.PCA_dimred(tf_idf, 1)
-	tf_idf = pd.DataFrame(tf_idf)
-	data = pd.concat([data, tf_idf], axis = 1)
-	return data
+		tf_idf = tv.transform(data).toarray()
+	return tf_idf
 
 def TFidf_name(data, train):
-	try:
-		data['name']
-	except KeyError:
-		return data
-
 	if train == True:
-		tf_idf_name = tv_name.fit_transform(data['name']).toarray()
+		tf_idf_name = tv_name.fit_transform(data).toarray()
 	else:
-		tf_idf_name = tv_name.transform(data['name']).toarray()
+		tf_idf_name = tv_name.transform(data).toarray()
+	return tf_idf_name
 
-	tf_idf_name = analyse.PCA_dimred(tf_idf_name, 1)
-	tf_idf_name = pd.DataFrame(tf_idf_name)
-	data = pd.concat([data, tf_idf_name], axis = 1)
-#	data['name'] = tf_idf_name
-	return data
 
+
+def new_binary_encoding(column, oh_encoder):
+	oh_encoder = oh_encoder.fit(np.array(column))
+	column_bin = oh_encoder.transform(column)
+	return column_bin
+	
 
 def binary_encoding(column, oh_encoder, train, category_1):
-
 	if train == True:
-		oh_encoder = oh_encoder.fit(np.array(column))
-		
+		oh_encoder = oh_encoder.fit(np.array(column))	
 	if train == True and column.isnull().sum == column.shape[0]:
 		column_bin = pd.DataFrame(np.zeros([column.shape[0], 1]))
 	elif train == False and column.isnull().sum() == column.shape[0]:
@@ -110,11 +101,13 @@ def binary_encoding(column, oh_encoder, train, category_1):
 	return column_bin
 
 def bin_cleaning_data(data, train):
-	standard_categories = ['name', 'item_condition_id', 'shipping', 'item_description', 'price']
+	standard_categories = ['name', 'item_condition_id', 'shipping', 'item_description', 'price', 'description_len']
 	new_data = pd.DataFrame()
 	for cat in standard_categories:
 		if cat in data.columns:
 			new_data = pd.concat([new_data, data[cat]], axis=1)
+	print('BAD HERE??')
+	print(new_data.head())
 	category_1 = False
 	#new_data = pd.concat([data['item_condition_id'], data['shipping'], data['item_description'], data['price']], axis=1)
 	for i in range(5):
@@ -125,11 +118,13 @@ def bin_cleaning_data(data, train):
 		if 'category_'+str(i) in data.columns:
 			new_data = pd.concat([new_data, binary_encoding(data['category_'+str(i)], oh_encoder_list[i], train, category_1)], axis=1)
 
+	print('not sow bad now')
+	print(new_data.head())
+
 	try:
 		new_data = pd.concat([new_data, binary_encoding(data['brand_name'], oh_encoder_list[5], train, False)], axis=1)
 	except KeyError:
-		return new_data
-	
+		pass
 	return new_data
 
 def drop_missing_brandnames(data):
@@ -152,6 +147,12 @@ def tuple_to_string(brand):
 	return result[1:]
 
 def record_most_common_brandnames_per_cat(train_data, test_data):
+	try:
+		train_data['category_name']
+		train_data['brand_name']
+	except KeyError:
+		return ['']
+
 	data = pd.concat([train_data, test_data])
 	data = data.reset_index(drop=True)
 	mc_brandnames_per_cat = {}
@@ -195,6 +196,11 @@ def replace_undefined_brand(item_name, brand_name, unique_brands):
 		return brand_name
 
 def find_brands(train_data, test_data):
+	try:
+		train_data['brand_name']
+	except KeyError:
+		return ['']
+
 	data = pd.concat([train_data, test_data])
 	data = data.reset_index(drop=True)
 	all_brands = data['brand_name']
@@ -212,6 +218,7 @@ def find_brands(train_data, test_data):
 def fill_in_brand(data, unique_brands):
 	try:
 		data['brand_name']
+		data['name']
 	except KeyError:
 		return data
 
@@ -279,12 +286,72 @@ def horizontal_split(train_data, test_data):
 		test_list.append(test_dataframe)
 	return(train_list, test_list)
 
+
+def cutting(dataset):
+    pop_brand = dataset['brand_name'].value_counts().loc[lambda x: x.index != 'undefined'].index[:NUM_BRANDS]
+    dataset.loc[~dataset['brand_name'].isin(pop_brand), 'brand_name'] = 'undefined'
+    pop_category = dataset['category_name'].value_counts().loc[lambda x: x.index != 'undefined'].index[:NUM_BRANDS]
+    dataset.loc[~dataset['category_name'].isin(pop_category), 'category_name'] = 'undefined'
+
+
+
+
+
+def preprocessing_main2(train_data, test_data):
+	start_time = time.time()
+	nrow_train = train_data.shape[0]
+	merge = pd.concat([train_data, test_data])
+
+	submission = test_data['train_id']
+	del train_data
+	del test_data
+
+	gc.collect()
+
+
+	# print('[{}] Finished count vectorize `name`'.format(time.time() - start_time))
+	X_name = TFidf_name(merge['name'], True)
+
+	X_category0 = new_binary_encoding(merge['category_0'].as_matrix(), oh_encoder_list[0])
+	X_category1 = new_binary_encoding(merge['category_1'].as_matrix(), oh_encoder_list[1])
+	X_category2 = new_binary_encoding(merge['category_2'].as_matrix(), oh_encoder_list[0])
+	X_category3 = new_binary_encoding(merge['category_3'].as_matrix(), oh_encoder_list[1])
+	X_category4 = new_binary_encoding(merge['category_4'].as_matrix(), oh_encoder_list[0])
+
+	X_category = hstack((X_category0, X_category1, X_category2, X_category3, X_category4))
+	# print('[{}] Finished TFIDF vectorize `item_description`'.format(time.time() - start_time))
+	X_description = TFidf_description(merge['item_description'], True)
+
+	# print('[{}] Finished label binarize `brand_name`'.format(time.time() - start_time))
+	X_brand = new_binary_encoding(merge['brand_name'].as_matrix(), oh_encoder_list[5])
+
+	X_dummies = csr_matrix(pd.get_dummies(merge[['item_condition_id', 'shipping']],
+                                          sparse=True).values)
+	print('[{}] Finished to get dummies on `item_condition_id` and `shipping`'.format(time.time() - start_time))
+
+	sparse_merge = hstack((X_dummies, X_description, X_brand, X_category, X_name)).tocsr()
+	print('[{}] Finished to create sparse merge'.format(time.time() - start_time))
+
+	X = sparse_merge[:nrow_train]
+	X_test = sparse_merge[nrow_train:]
+
+	print('MY HEAD')
+	print(X[0:10])
+
+	print("TRAINING SHAPE")
+	print(X.shape)
+	print("Test SHAPE")
+	print(X_test.shape)
+	return X, X_test
+
+
+
+
 # input cleaned dataframes, outputs 2 matrices
 def preprocessing_main(train_data, test_data):
 	#train_data, test_data = split(clean_data, 0.7)
 	train_data = train_data.drop(['train_id'], axis=1)
 	test_data = test_data.drop(['train_id'], axis=1)
-
 	mc_brandnames_per_cat = record_most_common_brandnames_per_cat(train_data, test_data)
 	unique_brands = find_brands(train_data, test_data)
 	
@@ -296,6 +363,7 @@ def preprocessing_main(train_data, test_data):
 
 	# Price = 0 droppen
 	train_data = train_data[(train_data.price > 0)]
+	cutting(train_data)
 	train_data = train_data.reset_index(drop=True)
 
 	# Vul de categorieën die je niet mee wil nemen in. 
@@ -304,34 +372,57 @@ def preprocessing_main(train_data, test_data):
 	# test_data = test_data.drop(drop_categories, axis=1)
 
 	train_data = bin_cleaning_data(train_data, True)
-#	train_data = TFidf_description(train_data, True)
-	train_data = TFidf_name(train_data, True)
+	#train_data = TFidf_description(train_data, True)
+#	train_data = TFidf_name(train_data, True)
 
 	#train_data = get_sentiment(train_data)
-
-
 	# TEST
 	# Missing brand_names
+
 	test_data = fill_in_brand(test_data, unique_brands)
 	test_data = fill_in_missing_most_common_brandnames_per_cat(test_data, mc_brandnames_per_cat)
+	print('BAD NOW')
+	print(test_data.head())
+
+
+	cutting(test_data)
+
+	print('SO SUPER BAD')
+	print(test_data.head())
+
 	test_data = bin_cleaning_data(test_data, False)
-#	test_data = TFidf_description(test_data, False)
-	test_data = TFidf_name(test_data, False)
+
+	print('SSOOOO BAD')
+	print(test_data.head())
+
+	#test_data = TFidf_description(test_data, False)
+#	test_data = TFidf_name(test_data, False)
 
 
 	#test_data = get_sentiment(test_data)
 
 	# item_description moet altijd gedropt worden 
-	train_data = train_data.drop(['item_description', 'name'], axis=1)
-	test_data = test_data.drop(['item_description', 'name'], axis=1)
+	try:
+		train_data = train_data.drop(['item_description'], axis=1)
+		test_data = test_data.drop(['item_description'], axis=1)
+	except ValueError:
+		pass
+	try:
+		train_data = train_data.drop(['name'], axis=1)
+		test_data = test_data.drop(['name'], axis=1)
+	except ValueError:
+		pass
 
-	train_horizontal_splitted, test_horizontal_splitted = horizontal_split(train_data, test_data)
-	train_X_splitted, train_y_splitted, test_X_splitted, test_y_splitted  = [], [], [], []
-	for train, test in zip(train_horizontal_splitted, test_horizontal_splitted):
-		train_y_splitted.append(train['price'])
-		train_X_splitted.append(train.drop(['price'], axis=1))
-		test_y_splitted.append(test['price'])
-		test_X_splitted.append(test.drop(['price'], axis=1))
+
+	try:
+		train_horizontal_splitted, test_horizontal_splitted = horizontal_split(train_data, test_data)
+		train_X_splitted, train_y_splitted, test_X_splitted = [], [], []
+		for train, test in zip(train_horizontal_splitted, test_horizontal_splitted):
+			train_y_splitted.append(train['price'])
+			train_X_splitted.append(train.drop(['price'], axis=1))
+			test_X_splitted.append(test.drop(['price'], axis=1))
+	except TypeError:
+		pass
 
 	train_Y = train_data['price'].as_matrix()
 	train_X = train_data.drop(['price'], axis=1).as_matrix()
@@ -339,5 +430,6 @@ def preprocessing_main(train_data, test_data):
 	test_Y = test_data['price'].as_matrix()
 	test_X = test_data.drop(['price'], axis=1).as_matrix()
 
+	return train_X, test_X, train_Y
 #	return train_X, test_X, train_Y, test_Y
-	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted, test_y_splitted
+#	return train_X, test_X, train_Y, test_Y, train_X_splitted, test_X_splitted, train_y_splitted
