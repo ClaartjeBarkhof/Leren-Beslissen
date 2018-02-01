@@ -14,19 +14,23 @@ import pandas as pd
 # Expects a dataframe of two colums:
 # 		- col 1 to be the predicted price
 #		- col 2 to be the actual price
-def calc_error(dataframe):
-	pred_price = dataframe['p']
-	pred_price = pred_price.where(pred_price > 0, 0)
+def calc_error(prediction, testy):
+#	pred_price = dataframe['p']
+#	prediction = prediction.where(prediction > 0, 0)
+#	prediction = prediction.as_matrix()
+#	testy = testy.as_matrix()
 	# print(pred_price)
-	actual_price = dataframe['a']
-	bias = np.mean(pred_price)-np.mean(actual_price)
-	n = len(pred_price)
-	verschil_vec = (pred_price - actual_price)
+	prediction[prediction < 3] = 3
+	prediction[prediction > 2000] = 2000
+	bias = np.mean(prediction)-np.mean(testy)
+	n = len(prediction)
+	verschil_vec = (prediction - testy)
 	mean_verschil = (1 / n) * np.sum(np.absolute(verschil_vec))
 	variance = (1 / n) * np.sum((verschil_vec - mean_verschil) ** 2)
 	#print("Gemiddelde afwijking in prijs:", mean_verschil)
 	#print("Variantie:", variance)
-	error = np.sqrt((1 / n) * np.sum((np.log(pred_price + 1) - np.log(actual_price + 1)) ** 2))
+	error = np.sqrt(np.mean(np.power(np.log1p(prediction)-np.log1p(testy), 2)))
+
 	return error, bias
 
 def plot_PCA_options(training_set, training_target, validation_set, validation_target):
