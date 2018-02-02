@@ -34,7 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 250000
+INSTANCES = 1000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
@@ -82,55 +82,24 @@ def tokenize(description):
         print("error with description:", description)
         return []
 
-def add_description_len(data):
-	#data['tokenized_description'] = data['item_description'].apply(lambda x: tokenize(x))
-	data['description_len'] = data['item_description'].apply(lambda x: x.count(' '))
-	return data
-
-
 def to_categorical(dataset):
     dataset['category_name'] = dataset['category_name'].astype('category')
     dataset['brand_name'] = dataset['brand_name'].astype('category')
     dataset['item_condition_id'] = dataset['item_condition_id'].astype('category')
 
 
-def clean_main(cats):
+def clean_main():
 	t_start = time.time()
 	data = open_tsv("../train.tsv")
 #	data = data.drop(cats, axis=1)
 
 	t_start = time.time()
 	data = replace_NAN(data)
+	data = split_categories(data)
 
-	try:
-		data = add_description_len(data)
-	except KeyError:
-		pass
-	try:
-		data = split_categories(data)
-	except KeyError:
-		pass
 #	to_categorical(data)
 
 	print("Clean!")
-	#print("---- %s seconds ----" %(time.time()-t_start))
 
-
-	'''
-	print("Undefined brand_name", len(data[(data.brand_name == 'undefined')]))
-	missing_brandname_data_cat = data[(data.brand_name == 'undefined')].category_name
-	counts = missing_brandname_data_cat.value_counts()
-	length = counts.index.shape[0]
-	list2 = [i for i in range(length)]
-	sns.barplot(counts.values, list2)
-	plt.show()	
-	'''
-
-	# Save cleaned data matrix in file
-	#fileName = '../clean_matrix.pickle'
-	#fileObject = open(fileName,'wb')
-	#pickle.dump(data, fileObject)
-	#fileObject.close()
-	#data = scale(data)
 	return data
 	

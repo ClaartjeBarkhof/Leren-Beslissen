@@ -27,17 +27,13 @@ from sklearn.feature_selection import RFE
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Ridge
 
-import external_kernel
-
-def validation_split(data, cats):
+def validation_split(data, features):
 	error_list = []
 	bias_list = []
 	X = data.drop(["price"],axis = 1)
 	y = data["price"]
-	train, test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=10)
-#	rPerc = 0.15
-#	lPerc = 0.85
-	train_X, test_X = preprocessing.preprocessing_main2(train, test)
+	train, test, y_train, y_test = train_test_split(X, y, test_size=0.15)
+	train_X, test_X = preprocessing.preprocessing_main2(train, test, features)
 	for x in range(3):
 		prediction = learning_algorithms.external_learning(train_X, np.log1p(y_train), test_X)
 		(error, bias) = analyse.calc_error(prediction, y_test)
@@ -54,19 +50,21 @@ def write_submission(price_df, csv_name):
 	submission_df = submission_df.rename(columns = {'p':'price'})
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
-def main(cats=[], clean_data=True):
+def main(features=[], clean_data=True):
 	if clean_data:
-		clean_data = clean.clean_main(cats)
+		clean_data = clean.clean_main()
 	else:
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
-	(error_list,bias_list) = validation_split(clean_data, cats)
+	(error_list,bias_list) = validation_split(clean_data, features)
 	error = sum(error_list)/float(len(error_list))
 	bias = sum(bias_list)/float(len(bias_list))
 	print("Bias: ")
 	print(bias)
 	print("Error: ")
 	print(error)
-	return error, bias
+	return error
 
-main()
+# Probleem #1: als je alleen "brand_fill" gebruikt gaat het fout omdat hstack raar omgaat met alleen een Dataframe als input
+# Probleem #2: als je "shipping" toevoegd gaat LGBM klagen; hij verwacht een float maar krijgt een int. Dit komt doordat als je een sparsematrix aan een lijst toevoegd het type verandert naar dataframe
+main([])
