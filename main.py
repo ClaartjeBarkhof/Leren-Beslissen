@@ -65,5 +65,4 @@ def compute_error(features=[], clean_data=True):
 	print(error)
 	return error
 
-# Probleem #1: als je alleen "brand_fill" gebruikt gaat het fout omdat hstack raar omgaat met alleen een Dataframe als input
-# Probleem #2: als je "shipping" toevoegd gaat LGBM klagen; hij verwacht een float maar krijgt een int. Dit komt doordat als je een sparsematrix aan een lijst toevoegd het type verandert naar dataframe
+compute_error(['item_condition', 'shipping', 'descr_tfidf', 'brand_nothing', 'name_tfidf', 'cat_all'])

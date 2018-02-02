@@ -34,7 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 1000
+INSTANCES =20000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)

@@ -297,7 +297,7 @@ def preprocessing_main2(train_data, test_data, features):
 		X_category = hstack((X_category0, X_category1, X_category2, X_category3))
 	if "cat_all" in features:
 		X_category = hstack((X_category0, X_category1, X_category2, X_category3, X_category4))
-	#final_features.append(X_category)
+	final_features.append(X_category)
 
 	if "descr_tfidf" in features:
 		X_description = TFidf_description(merge['item_description'], True)
@@ -325,19 +325,21 @@ def preprocessing_main2(train_data, test_data, features):
 		X_brand = new_binary_encoding(merge['brand_name'].as_matrix(), oh_encoder_list[5])
 		final_features.append(X_brand)
 
-	if "shipping" in features:
+	if "shipping" in features and "item_condition" in features:
+		X_dummies = csr_matrix(pd.get_dummies(merge[['item_condition_id', 'shipping']],
+                                          sparse=True).values)
+		final_features.append(X_dummies)
+	elif "shipping" in features:
 		X_shipping = csr_matrix(pd.get_dummies(merge['shipping'],
                                           sparse=True).values)
 		final_features.append(X_shipping)
-
-	if "item_condition" in features:
+	elif "item_condition" in features:
 		X_condition = csr_matrix(pd.get_dummies(merge[['item_condition_id']],
                                           sparse=True).values)
 		final_features.append(X_condition)
+	
 
-	print('[{}] Finished to get dummies on `item_condition_id` and `shipping`'.format(time.time() - start_time))
 	sparse_merge = hstack(tuple(final_features)).tocsr()
-	print('[{}] Finished to create sparse merge'.format(time.time() - start_time))
 
 	X = sparse_merge[:nrow_train]
 	X_test = sparse_merge[nrow_train:]
