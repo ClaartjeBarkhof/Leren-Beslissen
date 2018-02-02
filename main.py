@@ -50,7 +50,7 @@ def write_submission(price_df, csv_name):
 	submission_df = submission_df.rename(columns = {'p':'price'})
 	submission_df.to_csv(csv_name, sep=',', index=False)
 
-def main(features=[], clean_data=True):
+def compute_error(features=[], clean_data=True):
 	if clean_data:
 		clean_data = clean.clean_main()
 	else:
@@ -67,4 +67,3 @@ def main(features=[], clean_data=True):
 
 # Probleem #1: als je alleen "brand_fill" gebruikt gaat het fout omdat hstack raar omgaat met alleen een Dataframe als input
 # Probleem #2: als je "shipping" toevoegd gaat LGBM klagen; hij verwacht een float maar krijgt een int. Dit komt doordat als je een sparsematrix aan een lijst toevoegd het type verandert naar dataframe
-main([])

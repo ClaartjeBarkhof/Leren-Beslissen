@@ -1,7 +1,7 @@
 import numpy as np
 import main
 
-trails = 3
+trails = 1
 
 def powerset(s):
     x = len(s)
@@ -11,7 +11,7 @@ def powerset(s):
 
 def compute_error(option):
     all_errors = []
-    for i in range(3):
+    for i in range(trails):
         print(option)
         error = main.compute_error(option)
         all_errors.append(error)
@@ -49,7 +49,7 @@ def pick_best_feature(option_list):
     return best_option
     
 def pick_options():
-    options_all = [[
+    options_all = [[['descr_tfidf', 'shipping', 'item_condition', 'brand_nothing', 'cat_1'],
     ['descr_sentiment', 'shipping', 'item_condition', 'brand_nothing', 'cat_1'],
     ['descr_len', 'shipping', 'item_condition', 'brand_nothing', 'cat_1']],
     [['name_bin', 'shipping', 'item_condition', 'brand_nothing', 'cat_1'],

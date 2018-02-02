@@ -336,7 +336,7 @@ def preprocessing_main2(train_data, test_data, features):
 		final_features.append(X_condition)
 
 	print('[{}] Finished to get dummies on `item_condition_id` and `shipping`'.format(time.time() - start_time))
-	sparse_merge = hstack(final_features).tocsr()
+	sparse_merge = hstack(tuple(final_features)).tocsr()
 	print('[{}] Finished to create sparse merge'.format(time.time() - start_time))
 
 	X = sparse_merge[:nrow_train]
