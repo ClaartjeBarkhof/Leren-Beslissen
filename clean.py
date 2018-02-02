@@ -15,7 +15,6 @@ import category_encoders as ce
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
@@ -35,7 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 import analyse
 
-INSTANCES = 200000
+INSTANCES = 250000
 
 def open_tsv(filepath):
 	data = pd.read_table(filepath)
