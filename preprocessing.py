@@ -289,24 +289,28 @@ def preprocessing_main2(train_data, test_data, features):
 
 	if "cat_1" in features:
 		X_category = X_category0
+		final_features.append(X_category)
 	if "cat_2" in features:
 		X_category = hstack((X_category0, X_category1))
+		final_features.append(X_category)
 	if "cat_3" in features:
 		X_category = hstack((X_category0, X_category1, X_category2))
+		final_features.append(X_category)
 	if "cat_4" in features:
 		X_category = hstack((X_category0, X_category1, X_category2, X_category3))
+		final_features.append(X_category)
 	if "cat_all" in features:
 		X_category = hstack((X_category0, X_category1, X_category2, X_category3, X_category4))
-	final_features.append(X_category)
+		final_features.append(X_category)
 
 	if "descr_tfidf" in features:
 		X_description = TFidf_description(merge['item_description'], True)
 		final_features.append(X_description)
 	if "descr_sentiment" in features:
-		X_sentiment = get_sentiment(merge['item_description'])
+		X_sentiment = np.matrix(get_sentiment(merge['item_description'])).T
 		final_features.append(X_sentiment)
 	if "descr_len" in features:
-		X_descr_len = description_len(merge['item_description'])
+		X_descr_len = np.matrix(description_len(merge['item_description'])).T
 		final_features.append(X_descr_len)
 
 	if "name_bin" in features:
@@ -337,15 +341,16 @@ def preprocessing_main2(train_data, test_data, features):
 		X_condition = csr_matrix(pd.get_dummies(merge[['item_condition_id']],
                                           sparse=True).values)
 		final_features.append(X_condition)
-	
-
-	sparse_merge = hstack(tuple(final_features)).tocsr()
-
+	for elm in final_features:
+		print(elm.shape)
+		print(type(elm))
+	sparse_merge = hstack((final_features)).astype(float).tocsr()
 	X = sparse_merge[:nrow_train]
 	X_test = sparse_merge[nrow_train:]
 
 	return X, X_test
 
+"""
 def preprocessing_main3(train_data, test_data, features):
 	start_time = time.time()
 	nrow_train = train_data.shape[0]
@@ -398,4 +403,4 @@ def preprocessing_main3(train_data, test_data, features):
 	print("Test SHAPE")
 	print(X_test.shape)
 	return X, X_test
-
+"""

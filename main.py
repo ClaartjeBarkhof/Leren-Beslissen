@@ -32,16 +32,17 @@ def validation_split(data, features):
 	bias_list = []
 	X = data.drop(["price"],axis = 1)
 	y = data["price"]
-	train, test, y_train, y_test = train_test_split(X, y, test_size=0.15)
-	train_X, test_X = preprocessing.preprocessing_main2(train, test, features)
-	for x in range(3):
+	for x in range(1):
+		train, test, y_train, y_test = train_test_split(X, y, test_size=0.15)
+		train_X, test_X = preprocessing.preprocessing_main2(train, test, features)
 		prediction = learning_algorithms.external_learning(train_X, np.log1p(y_train), test_X)
 		(error, bias) = analyse.calc_error(prediction, y_test)
 		error_list.append(error)
 		bias_list.append(bias)
-	lins = np.linspace(0.6,1.0,num =3)
+	print(bias_list)
+	lins = np.linspace(0.6,1.0,num =1)
 	plt.scatter(lins,error_list)
-	plt.show()
+	#plt.show()
 	return error_list, bias_list
 
 def write_submission(price_df, csv_name):
@@ -64,5 +65,3 @@ def compute_error(features=[], clean_data=True):
 	print("Error: ")
 	print(error)
 	return error
-
-compute_error(['item_condition', 'shipping', 'descr_tfidf', 'brand_nothing', 'name_tfidf', 'cat_all'])

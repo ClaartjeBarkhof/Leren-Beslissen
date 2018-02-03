@@ -37,7 +37,7 @@ def pick_best_feature(option_list):
     lowest_error = 999
     best_option = None
     for option in option_list:
-        if len(option) == 1:
+        if len(option) < 3:
             continue
         all_errors, error = compute_error(option) 
         fh = open("subsets.txt", "a") 
@@ -72,10 +72,10 @@ def pick_options():
     return best_opt
 
 def find_features():
-    best_opt = pick_options()
-    print("selected:", best_opt)
-    main_features = ["shipping", "item_condition_id", best_opt[0], best_opt[1], best_opt[2],best_opt[3]]
-    subsets = list(powerset(main_features))[1:]
+    #best_opt = pick_options()
+    #print("selected:", best_opt)
+    main_features = ["shipping", "item_condition", "descr_tfidf", "name_bin", "brand_fill", "cat_4"]
+    subsets = list(powerset(main_features))[8:]
     best_feature_set = pick_best_feature(subsets)
     print("best features", best_feature_set)
     return best_feature_set
