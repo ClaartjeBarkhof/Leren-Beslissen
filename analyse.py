@@ -30,8 +30,8 @@ def calc_error(prediction, testy):
 	#print("Gemiddelde afwijking in prijs:", mean_verschil)
 	#print("Variantie:", variance)
 	error = np.sqrt(np.mean(np.power(np.log1p(prediction)-np.log1p(testy), 2)))
-
-	return error, bias
+	error_list = np.sqrt((np.power(np.log1p(prediction)-np.log1p(testy), 2)))
+	return error, bias, error_list
 
 def plot_PCA_options(training_set, training_target, validation_set, validation_target):
 	dim_list = []

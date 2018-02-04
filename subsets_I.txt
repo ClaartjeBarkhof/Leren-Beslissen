@@ -1,7 +1,0 @@
-"['shipping', 'item_condition', 'descr_tfidf']","0.607370186376","[0.60737018637627782]"
-"['shipping', 'item_condition', 'name_bin']","0.54959148273","[0.5495914827295818]"
-"['shipping', 'descr_tfidf', 'name_bin']","0.539270599522","[0.53927059952164125]"
-"['item_condition', 'descr_tfidf', 'name_bin']","0.539358910461","[0.53935891046050188]"
-"['shipping', 'item_condition', 'descr_tfidf', 'name_bin']","0.53557597212","[0.53557597212006558]"
-"['shipping', 'item_condition', 'brand_fill']","0.636710365319","[0.63671036531925762]"
-"['shipping', 'descr_tfidf', 'brand_fill']","0.576652654176","[0.57665265417589529]"

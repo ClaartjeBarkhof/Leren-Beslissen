@@ -36,14 +36,14 @@ def validation_split(data, features):
 		train, test, y_train, y_test = train_test_split(X, y, test_size=0.15)
 		train_X, test_X = preprocessing.preprocessing_main2(train, test, features)
 		prediction = learning_algorithms.external_learning(train_X, np.log1p(y_train), test_X)
-		(error, bias) = analyse.calc_error(prediction, y_test)
+		(error, bias, all_errors) = analyse.calc_error(prediction, y_test)
 		error_list.append(error)
 		bias_list.append(bias)
 	print(bias_list)
 	lins = np.linspace(0.6,1.0,num =1)
 	plt.scatter(lins,error_list)
 	#plt.show()
-	return error_list, bias_list
+	return error_list, bias_list, all_errors
 
 def write_submission(price_df, csv_name):
 	id_df = pd.DataFrame(np.arange(price_df.shape[0]), columns=['test_id'])
@@ -57,11 +57,11 @@ def compute_error(features=[], clean_data=True):
 	else:
 		fileObject = open('../clean_matrix.pickle','rb')
 		clean_data = pickle.load(fileObject)
-	(error_list,bias_list) = validation_split(clean_data, features)
+	(error_list,bias_list, all_errors) = validation_split(clean_data, features)
 	error = sum(error_list)/float(len(error_list))
 	bias = sum(bias_list)/float(len(bias_list))
 	print("Bias: ")
 	print(bias)
 	print("Error: ")
 	print(error)
-	return error
+	return error, all_errors
