@@ -77,30 +77,30 @@ def lgbm(training_set, training_target, validation_set, validation_target):
 	return pd.DataFrame({'p':predsL, 'a':validation_target})
 
 
-def external_learning(X, y, X_test):
+def external_learning(X, y, X_test, Lgbm1, Lgbm2, Rid1, Rid2): #, Lgbm1, Lgbm2, Rid1, Rid2
 	start_time = time.time()
-	model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3)
+	model = Ridge(solver="auto", fit_intercept=True, random_state=205, alpha=3.5)
 	model.fit(X, y)
 	print('[{}] Finished to train ridge sag'.format(time.time() - start_time))
 	predsR = model.predict(X=X_test)
 	print('[{}] Finished to predict ridge sag'.format(time.time() - start_time))
 
-	model = Ridge(solver="lsqr", fit_intercept=True, random_state=145, alpha = 3)
+	model = Ridge(solver="auto", fit_intercept=True, random_state=145, alpha = 3.0)
 	model.fit(X, y)
 	print('[{}] Finished to train ridge lsqrt'.format(time.time() - start_time))
 	predsR2 = model.predict(X=X_test)
 	print('[{}] Finished to predict ridge lsqrt'.format(time.time() - start_time))
 
-	train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size = 0.1, random_state = 144) 
+	train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size = 0.1, random_state = 144)
 	d_train = lgb.Dataset(train_X, label=train_y)
 	d_valid = lgb.Dataset(valid_X, label=valid_y)
 	watchlist = [d_train, d_valid]
-    
+
 	params = {
-		'learning_rate': 0.76,
+		'learning_rate': 0.75,
 		'application': 'regression',
 		'max_depth': 3,
-		'num_leaves': 99,
+		'num_leaves': 127,
 		'verbosity': -1,
 		'metric': 'RMSE',
 		'nthread': 4
@@ -110,32 +110,34 @@ def external_learning(X, y, X_test):
 		'learning_rate': 0.85,
 		'application': 'regression',
 		'max_depth': 3,
-		'num_leaves': 110,
+		'num_leaves': 127,
 		'verbosity': -1,
 		'metric': 'RMSE',
 		'nthread': 4
 	}
 
 	model = lgb.train(params, train_set=d_train, num_boost_round=7500, valid_sets=watchlist, \
-	early_stopping_rounds=500, verbose_eval=500) 
+	early_stopping_rounds=500, verbose_eval=500)
 	predsL = model.predict(X_test)
-    
+
 	print('[{}] Finished to predict lgb 1'.format(time.time() - start_time))
-    
-	train_X2, valid_X2, train_y2, valid_y2 = train_test_split(X, y, test_size = 0.1, random_state = 101) 
+
+	train_X2, valid_X2, train_y2, valid_y2 = train_test_split(X, y, test_size = 0.1, random_state = 101)
 	d_train2 = lgb.Dataset(train_X2, label=train_y2)
 	d_valid2 = lgb.Dataset(valid_X2, label=valid_y2)
 	watchlist2 = [d_train2, d_valid2]
 
 	model = lgb.train(params2, train_set=d_train2, num_boost_round=3000, valid_sets=watchlist2, \
-	early_stopping_rounds=50, verbose_eval=500) 
+	early_stopping_rounds=50, verbose_eval=500)
 	predsL2 = model.predict(X_test)
 
 	print('[{}] Finished to predict lgb 2'.format(time.time() - start_time))
-
-	preds = predsR2*0.15 + predsR*0.15 + predsL*0.5 + predsL2*0.2
+	# preds = predsR2*0.15 + predsR*0.15 + predsL*0.5 + predsL2*0.2
+	preds = predsR2*Rid2 + predsR*Rid1 + predsL*Lgbm1 + predsL2*Lgbm2
 	preds = np.expm1(preds)
+	print('dit izjn de preds',preds)
 	return preds
+	# return pd.DataFrame({'p':preds,'a':d_valid})
 
 
 def lgbmRidge(training_set, training_target, test_set, rPerc,lPerc):
